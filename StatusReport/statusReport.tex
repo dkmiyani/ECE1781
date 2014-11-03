@@ -355,7 +355,7 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Finding the Right Consistency Model \\ {\large A comparison of the different consistency models in S2E for testing}}
+\title{Selecting the Right Consistency Model \\ {\large Determining the performance vs. accuracy tradeoff for S2E's relaxed consistency models}}
 
 
 % author names and affiliations
@@ -436,63 +436,115 @@ dhaval.miyani@utoronto.ca}}
 \IEEEpeerreviewmaketitle
 
 
+% %-- OLD SECTION
+%\section{Introduction}
+%% no \IEEEPARstart
+%S2E is a symbolic execution platform that operates
+%directly on application binaries for analyzing the
+%properties and behavior of software systems. It
+%analyzes programs in-vivo (the whole environment)
+%within a real software stack (user program, libraries,
+%kernel, drivers, etc.) rather than using abstract models
+%of these layers. It is commonly used for performance
+%profiling, reverse engineering of proprietary software,
+%and finding bugs in user-mode and kernel-mode
+%binaries [1].
+%
+%The goal of this experiment is to evaluate the
+%performance of the consistency models in the S2E
+%system when finding different types of bugs. We are
+%interested in investigating whether we can identify
+%program “features” (e.g., program length, bug type,
+%etc.) that pose challenges for certain consistency
+%models or present benefits. Some software systems are
+%only exposed to certain kinds of bugs (e.g., a batch
+%processing script will not be exposed to concurrency
+%bugs). This observation leads us to believe that a given
+%consistency model may fit specific a application
+%domain better than others.
+%
+%As different consistency models treat the
+%environment differently we expect those that
+%symbolically execute the environment will perform
+%slower and have higher memory consumption [2]. As
+%stated previously certain consistency models permit
+%inconsistency in the environment and we expect that
+%bugs which manifest on changes in the environment
+%will not be detected by these models. The SC-SE
+%model suffers from path explosion [1] and as such we
+%expect it to have the worst performance overall,
+%though it should catch bugs given unlimited time and
+%resources.
+%
+%Although [1] recommends the use of the RC-CC
+%model we expect that there will be certain cases in
+%which other models outperform it. If this holds true,
+%we will perform an analysis to determine what the
+%causes are and if certain program features trigger the
+%performance differences.
+%%
 
 \section{Introduction}
 % no \IEEEPARstart
-S2E is a symbolic execution platform that operates
-directly on application binaries for analyzing the
-properties and behavior of software systems. It
-analyzes programs in-vivo (the whole environment)
-within a real software stack (user program, libraries,
-kernel, drivers, etc.) rather than using abstract models
-of these layers. It is commonly used for performance
-profiling, reverse engineering of proprietary software,
-and finding bugs in user-mode and kernel-mode
-binaries [1].
+S2E is a symbolic execution platform that operates directly on
+application binaries for analyzing the
+properties and behavior of software systems. It analyzes programs
+in-vivo (the whole environment)
+within a real software stack (user program, libraries, kernel,
+drivers, etc.) rather than using abstract
+models of these layers. It is commonly used for performance profiling,
+reverse engineering of
+proprietary software, and finding bugs in user-mode and kernel-mode
+binaries \cite{s2e}.
 
-The goal of this experiment is to evaluate the
-performance of the consistency models in the S2E
-system when finding different types of bugs. We are
-interested in investigating whether we can identify
-program “features” (e.g., program length, bug type,
-etc.) that pose challenges for certain consistency
-models or present benefits. Some software systems are
-only exposed to certain kinds of bugs (e.g., a batch
-processing script will not be exposed to concurrency
-bugs). This observation leads us to believe that a given
-consistency model may fit specific a application
-domain better than others.
+The goal of this experiment is to evaluate two consistency models in the S2E
+system which do not have predictable accuracy or performance. These
+are the relaxed
+consistency overapproximate and relaxed consistency CFG consistency
+models, which are
+described in the Background section. Our primary objective is to
+determine the accuracy of these
+models for different types of bugs. A secondary objective is to
+observe the performance of these
+consistency models. These two objectives will allow us to determine if
+there is a tradeoff between
+performance and accuracy when using these two models. For example,
+does running S2E with a
+given consistency model for an extra hour improve accuracy by 1\% or
+10\%? Ideally, we want to
+be able to determine what program attributes (e.g., program length,
+type of bug, location of bug, etc.)
+make these models more effective (if any).
 
-As different consistency models treat the
-environment differently we expect those that
-symbolically execute the environment will perform
-slower and have higher memory consumption [2]. As
-stated previously certain consistency models permit
-inconsistency in the environment and we expect that
-bugs which manifest on changes in the environment
-will not be detected by these models. The SC-SE
-model suffers from path explosion [1] and as such we
-expect it to have the worst performance overall,
-though it should catch bugs given unlimited time and
-resources.
+We believe these could be compelling results for software systems that
+are only exposed to a
+limited set of bug types, given that one consistency model may have
+higher accuracy for such bugs.
+Additionally, the accuracy vs. performance tradeoff would aid users in
+selecting how much time
+to allot S2E to run, given that a bit more time could increase the
+accuracy dramatically if program
+characteristics are a factor.
 
-Although [1] recommends the use of the RC-CC
-model we expect that there will be certain cases in
-which other models outperform it. If this holds true,
-we will perform an analysis to determine what the
-causes are and if certain program features trigger the
-performance differences.
-
-\section{Introduction}
-stating purpose of the project, expected outcome or result of the project
-
-\begin{itemize}
-\item Introduction: stating purpose of the project, expected outcome or result of the project
-\item Purpose/Goal - Primary objective is to determine the accuracy of the Relaxed Consistency models. Secondary obj is to observe the performance 
-\item Find the trade-off between the accuracy vs Performance
-For e.g. running for another 2 additional hours might increase the accuracy by 10\% or 1\%?!
-\item Expected outcome - ?The main advantage of RC is performance: by admitting these additional infeasible paths, one can avoid having to analyze large parts of the system that are not really targets of the analysis, thus al- lowing path exploration to reach the true target code sooner. How- ever, admitting locally infeasible paths (i.e., allowing the internal state of the unit to become inconsistent) makes most analyses prone to false positives, because some of the paths these analyses are ex- posed to cannot be produced by any concrete run.? [S2E paper]
-\end{itemize}
+The two consistency models we will analyze are relaxed in the sense
+that they admit infeasible paths
+(which other consistency models from S2E do not). This provides a
+performance advantage by limiting
+the analysis to only certain parts of the system, thus allowing the
+target code to be reached sooner \cite{s2e}.
+However, as these models allow locally infeasible paths (i.e., the
+state of the unit can be inconsistent), the
+analyses will be prone to false positives as these paths cannot be
+produced by concrete runs \cite{s2e}.
+We expect that the Relaxed Consistency CFG Consistency model will have
+a higher false positive rate and
+lower false positive rate as it functions similar to static analysis
+by admitting the infeasible paths.
+Conversely the Relaxed Consistency Overapproximate model would have
+poorer performance (as it uses
+constraints to only admit feasible paths), but the false positive rate
+should be quite low and the false
+negative rate is expected to be higher with this model.
 
 %\subsection{Subsection Heading Here}
 %Subsection text here.
@@ -660,6 +712,8 @@ infeasible ones).
 
 Our experiment will focus on evaluating the two latter models: RC-OC and RC-CC. These models are of particular interest because we cannot accurately predict the accuracy or performance of these two models in contrast to the other four models \cite{s2e}. 
 
+% TODO: describe difference between RC-OC and RC-CC in a sentence or two. 
+
 %And thus, Relaxed Consistency models allow us to tackle the path explosion problem.
 
 There are several differences between S2E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S2E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S2E's SC-SE, but it is limited to code-based selection and one consistency model. S2E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion unlike S2E, which is key to S2E's scalability and low programmer effort.
@@ -673,48 +727,89 @@ Static analysis is performed without executing the program in question and has k
 \label{s2e-cm}
 \end{figure}
 
-OUTLINE:
-
-\begin{itemize}
-\item Symbolic Execution: KLEE, SAGE, DART, Execution Synthesis
-	what Symbolic Execution is?
-\item Static Analysis: <insert paper here>
-\item Performance vs. Accuracy tradeoff: <insert paper here>
-\end{itemize}
-
-
 \section{Approach}
- research methodology or approach taken in the project
- \begin{itemize}
- \subsection{Sanity Check}
-\item Write a few short (< 100 LOC) dummy programs with different bugs (e.g., null pointer dereference, divide by zero, buffer overflow, etc.) to ensure that S2E can catch these bugs before evaluating larger programs - determine coverage of the consistency models before starting.
- \subsection{Dataset}
- \item Select three programs: (1) Web server like apache - lots of network usage (syscalls), (2) Database like SQLlite - lots of file i/o (syscalls), (3) Graphics editing software like Inkscape - lots of computation (not many syscalls expected)
- \subsection{Ground Truth}
-\item Look at bug reports for current (or older) versions of these programs to determine what bugs we expect S2E to find (?ground truth?-ish) and evaluate whether we should inject our own bugs. 
- \subsection{Measurement}
-\item Use a script or something to get the time of execution start to bug finding (somehow) - check if S2E does logging already (in that case we can just check what time that was added or whatever). Also need to write a script which cuts off S2E after certain time units. 
-\end{itemize}
+Here we discuss the research methodology used in preparation for the
+evaluation, separated into four parts.
+
+        \subsection{Sanity Check}
+
+First, we will be ensuring that these S2E models function as we would
+expect and that they are capable of detecting the different types of
+bugs we
+will use in our experiments. We will write a few short ($<$ 100 LOC)
+dummy programs with different bugs (e.g., null pointer dereference,
+divide by zero, buffer overflow, etc.) to determine coverage of the
+consistency models before beginning. If one of the consistency models
+cannot find any of these bugs these results will be recorded as a lack
+of accuracy for that model which allotting more execution time would
+not address, meaning that the accuracy vs. performance tradeoff for
+this type of bug and model would nonexistent.
+
+        \subsection{Dataset}
+
+We will select a diverse set of programs to allow us to determine
+whether different program characteristics (e.g., code length,
+interactions with the environment, etc.) give accuracy or performance
+gains for either model. The three programs will be open source and
+have a bug reporting system such that we can use these resources when
+establishing a ground truth (see next subsection). Three programs will
+be selected based on different levels of interaction with the
+environment.
+
+\begin{enumerate}
+        \item A web server (e.g., Apache), which we expect to have a lot of
+network usage (and thus system calls)
+        \item A database (e.g., SQLite), which we expect to have a lot of
+file i/o (and thus system calls)
+        \item A computation heavy application (e.g., Fourier Transform
+calculator), which we expect to have minimal interaction with the
+environment (not many system calls are expected)
+\end {enumerate}
+
+        \subsection{Ground Truth}
+
+We will look at bug reports for current (or older, if necessary)
+versions of the selected programs to determine what bugs we expect S2E
+to find and what (if any) bug types we may need to inject. This will
+enable us to establish a ground truth for the false negatives when
+measuring the accuracy of the models. Of course, S2E may find yet more
+bugs than those identified, so access to the source code will be
+necessary to verify any other bugs. This analysis will allow us to
+determine the false positive rate or approximate it depending on how
+many bugs S2E finds in a given application. This approximation may be
+necessary due to the manual effort required to label the bugs as valid
+or invalid.
+
+        \subsection{Measurement}
+
+We will create a script to automate the different runs of our
+experiment. In particular, this script will record the time that a
+given run started and cut off the execution after different amounts of
+time. A unit of time, for example, could be one hour, and testing
+across multiple of said unit (e.g., two hours, three hours, etc.) will
+permit us to determine the accuracy vs. performance tradeoff discussed
+earlier (if it exists). We may also determine how much time it took
+the different models to find a given bug within a unit by exploiting
+any logging functionality in S2E if necessary
 
 \section{Status}
- current status of implementation
+
+As this is an evaluation, there are two main stages for the evaluation of the consistency models for S2E: the preparation stage and the experimentation stage. We are currently in the preparation phase:
  \begin{itemize}
-\item Currently in preparatory phase
-\item We have built S2E and tested it on a sample application
-\item Gathering dataset, looking at bug reports for each application
-\item ~~~ Wrote dummy programs with bugs to ensure the consistency models catch these bugs (sanity check) 
+\item We are setting up S2E and using it on a sample application.  
+\item We are also gathering applications with bugs in them for our data set. We are looking at the bug reports for each application to ensure that it is suitable (i.e., we can establish a ground truth as described earlier). 
+\item Furthermore, we have created some sample programs injected with different types of bugs for sanity testing. This ensures that each of the two consistency models are able to catch the bugs from these sample programs (as described in the approach).  
 \end{itemize}
+
 
 \section{Evaluation}
- description of experiments that will be performed
- \begin{itemize}
-\item Per consistency model:
-Using script described above we will run each of the three applications for different ?time units? (e.g., one hour cutoff, two hour, ?., five hour) and record results (hopefully S2E has a log?..)
-\item Analyze bugs caught, comparing them to the ?ground truth? determined previously - this will affect accuracy (false negatives)
-\item Depending on the number of bugs caught, manually analyze the source code to determine whether there was an actual bug - also accuracy (false positives) 
-\item Create a performance accuracy tradeoff graphs per consistency model. X axis = different ?time units?, Y axis = number (or percentage, etc.) of FPs and FNs (two data lines).
-\end{itemize}
+This section describes the experiments that will be performed to test S2E's consistency models, specifically RC-CC and RC-OC. For each consistency model, the following experiments will carried out to get the empirical amount of time it takes to catch a bug and the accuracy rate:  
 
+\begin{itemize}
+\item Using the script described in the Approach section we will run each of the three applications for different ?time units? and record the results S2E generates. The time unit could be half an hour, one hour, or several - well fine tune this during the experiment depending on preliminary results. This will determine the number of bugs S2E catches for a given time period (for accuracy).
+\item  Depending on the bug caught by S2E, a manual analysis of the source code will be performed to determine whether there was an actual bug (based on the ground truth determined earlier). This will provide the accuracy rates: false positives and false negatives. If S2E identified a bug, which manual analysis proves not to be a bug, then the false positive rate will increase. Conversely, the false negative rate will be determined using the bug reports to see if S2E misses a bug that we are certain exists. 
+\item Create systematic performance-accuracy tradeoff graphs (per application and per consistency model). The x-axis of these graphs will be the different ?time units?, whereas the y-axis will be the number (or percentage) of false positives and false negatives (two data lines).
+\end{itemize}
 
 
 % conference papers do not normally have an appendix
