@@ -344,6 +344,9 @@
 % to submit to, of course. )
 
 
+\usepackage{graphicx}
+\usepackage{float}
+
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
 
@@ -447,36 +450,6 @@ profiling, reverse engineering of proprietary software,
 and finding bugs in user-mode and kernel-mode
 binaries [1].
 
-There are six different consistency models in S2E,
-described below. A model is consistent if there exist a
-globally feasible path through the system for every
-path explored in the unit. A unit is the block one
-wishes to analyze and the environment is the rest of
-the system.
-
-\begin{itemize}
-\item \textit{Strictly Consistent Concrete Execution (SC-CE):} 
-No symbolic execution in unit or environment.
-\item \textit{Strictly Consistent Unit-level Execution (SC-UE):} 
-Unit is symbolically executed while the
-environment is executed concretely.
-\item \textit{Strictly Consistent System-level Execution
-(SC-SE):} Unit and environment are executed
-symbolically â€“ this is the only model that
-executes the environment symbolically.
-\item \textit{Local Consistency (LC):} Similar to SC-UE,
-but it adheres to constraints that the
-environment/unit API contracts impose on
-return values.
-\item \textit{Relaxed Consistency Overapproximate
-Consistency (RC-OC):} Similar to LC, but it
-ignores the constraints from the environment/unit API contracts.
-\item \textit{Relaxed Consistency CFG Consistency (RC-CC):} 
-Similar to SC-UE, but like static analysis it can explore any 
-path in the unitâ€™s inter-procedural control flow graph (even
-infeasible ones).
-\end{itemize}
-
 The goal of this experiment is to evaluate the
 performance of the consistency models in the S2E
 system when finding different types of bugs. We are
@@ -509,6 +482,17 @@ which other models outperform it. If this holds true,
 we will perform an analysis to determine what the
 causes are and if certain program features trigger the
 performance differences.
+
+\section{Introduction}
+stating purpose of the project, expected outcome or result of the project
+
+\begin{itemize}
+\item Introduction: stating purpose of the project, expected outcome or result of the project
+\item Purpose/Goal - Primary objective is to determine the accuracy of the Relaxed Consistency models. Secondary obj is to observe the performance 
+\item Find the trade-off between the accuracy vs Performance
+For e.g. running for another 2 additional hours might increase the accuracy by 10\% or 1\%?!
+\item Expected outcome - ?The main advantage of RC is performance: by admitting these additional infeasible paths, one can avoid having to analyze large parts of the system that are not really targets of the analysis, thus al- lowing path exploration to reach the true target code sooner. How- ever, admitting locally infeasible paths (i.e., allowing the internal state of the unit to become inconsistent) makes most analyses prone to false positives, because some of the paths these analyses are ex- posed to cannot be produced by any concrete run.? [S2E paper]
+\end{itemize}
 
 %\subsection{Subsection Heading Here}
 %Subsection text here.
@@ -601,35 +585,95 @@ performance differences.
 % command of the stfloats package.
 
 
+\section{Background}
+Related research together with bibliography of relevant research
 
-\section{Key Steps}
-The conclusion goes here.
+There is much work in symbolic execution for testing [CITATIONS FROM KLEE 11, 14$-$16, 20$-$22, 24, 26, 27, 36]. A typical approach for testing is fuzzing [CITE REF], which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values [MAYBE CITE?]. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, [figure 1] shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. 
 
-\begin{enumerate}
-\item Select three programs that exhibit different types
-of bugs (e.g., Arithmetic bugs like divide by zero,
-resource bugs like null pointers or buffer
-overflows, etc.). These programs will be open-
-source with either well-known bugs or bugs we
-have injected. Programs will be carefully selected
-because of S2Eâ€™s performance limitations related
-to program size. Metrics for each sample program
-(e.g., LOC, number of conditional statements,
-number of system calls, etc.) will be gathered at
-this point.
-\item Determine the measurement methodology for the
-metrics used to evaluate different consistency
-models. Tentatively these metrics will include
-time to find the bug and the memory
-consumption.
-\item Run each of the consistency models on each of
-the applications with some cut-off time (exact
-value to be determined) and gather measurements
-for the aforementioned metrics.
-\item Gather and analyze the performance results for
-each consistency model along with the sample
-program metrics to identify any trends.
-\end{enumerate}
+ [INSERT CODE FRAGMENT HERE : if (x == 10) { stuff; } 
+ 
+ Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine "follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the "path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) "the path explosion problem" [CITE], which is due to the exponential growth of paths in a program caused by conditional branches, and (2) "the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). 
+ 
+ In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. 
+ 
+S2E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S2E, described below. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one
+wishes to analyze and the environment is the rest of the system.
+
+\begin{itemize}
+\item \textit{Strictly Consistent Concrete Execution (SC-CE):} 
+No symbolic execution in unit or environment.
+\item \textit{Strictly Consistent Unit-level Execution (SC-UE):} 
+Unit is symbolically executed while the
+environment is executed concretely.
+\item \textit{Strictly Consistent System-level Execution
+(SC-SE):} Unit and environment are executed
+symbolically -€“ this is the only model that
+executes the environment symbolically.
+\item \textit{Local Consistency (LC):} Similar to SC-UE,
+but it adheres to constraints that the
+environment/unit API contracts impose on
+return values.
+\item \textit{Relaxed Consistency Overapproximate
+Consistency (RC-OC):} Similar to LC, but it
+ignores the constraints from the environment/unit API contracts.
+\item \textit{Relaxed Consistency CFG Consistency (RC-CC):} 
+Similar to SC-UE, but like static analysis it can explore any 
+path in the unit's inter-procedural control flow graph (even
+infeasible ones).
+\end{itemize}
+
+Our experiment will focus on evaluating the two latter models: RC-OC and RC-CC. These models are of particular interest because we cannot accurately predict the accuracy or performance of these two models in contrast to the other four models \cite{s2e}. 
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{s2e-consistency-models.png}
+\caption{Figure 1: S2E Consistency Models \cite{s2e}}
+\label{s2e-cm}
+\end{figure}
+
+OUTLINE:
+
+\begin{itemize}
+\item Symbolic Execution: KLEE, SAGE, DART, Execution Synthesis
+	what Symbolic Execution is?
+\item Consistency Models, Evaluating S2E: SymDrive (http://pages.cs.wisc.edu/~kadav/new2/pdfs/symdrive.pdf)
+\item Static Analysis: <insert paper here>
+\item Performance vs. Accuracy tradeoff: <insert paper here>
+\end{itemize}
+
+
+\section{Approach}
+ research methodology or approach taken in the project
+ \begin{itemize}
+ \subsection{Sanity Check}
+\item Write a few short (< 100 LOC) dummy programs with different bugs (e.g., null pointer dereference, divide by zero, buffer overflow, etc.) to ensure that S2E can catch these bugs before evaluating larger programs - determine coverage of the consistency models before starting.
+ \subsection{Dataset}
+ \item Select three programs: (1) Web server like apache - lots of network usage (syscalls), (2) Database like SQLlite - lots of file i/o (syscalls), (3) Graphics editing software like Inkscape - lots of computation (not many syscalls expected)
+ \subsection{Ground Truth}
+\item Look at bug reports for current (or older) versions of these programs to determine what bugs we expect S2E to find (?ground truth?-ish) and evaluate whether we should inject our own bugs. 
+ \subsection{Measurement}
+\item Use a script or something to get the time of execution start to bug finding (somehow) - check if S2E does logging already (in that case we can just check what time that was added or whatever). Also need to write a script which cuts off S2E after certain time units. 
+\end{itemize}
+
+\section{Status}
+ current status of implementation
+ \begin{itemize}
+\item Currently in preparatory phase
+\item We have built S2E and tested it on a sample application
+\item Gathering dataset, looking at bug reports for each application
+\item ~~~ Wrote dummy programs with bugs to ensure the consistency models catch these bugs (sanity check) 
+\end{itemize}
+
+\section{Evaluation}
+ description of experiments that will be performed
+ \begin{itemize}
+\item Per consistency model:
+Using script described above we will run each of the three applications for different ?time units? (e.g., one hour cutoff, two hour, ?., five hour) and record results (hopefully S2E has a log?..)
+\item Analyze bugs caught, comparing them to the ?ground truth? determined previously - this will affect accuracy (false negatives)
+\item Depending on the number of bugs caught, manually analyze the source code to determine whether there was an actual bug - also accuracy (false positives) 
+\item Create a performance accuracy tradeoff graphs per consistency model. X axis = different ?time units?, Y axis = number (or percentage, etc.) of FPs and FNs (two data lines).
+\end{itemize}
+
 
 
 % conference papers do not normally have an appendix
@@ -679,6 +723,9 @@ C.~Cadar, D.~Dunbar, and D.~R. Engler, \emph{KLEE:
 Unassisted and automatic generation of high-coverage tests 
 for complex systems programs}. In Symp. on Operating Systems
 Design and Implementation, 2008.
+
+\bibitem{cute}
+Sen, Koushik; Darko Marinov; Gul Agha (2005). "CUTE: a concolic unit testing engine for C". "Proceedings of the 10th European software engineering conference held jointly with 13th ACM SIGSOFT international symposium on Foundations of software engineering". New York, NY: ACM. pp. 263?272.
 
 \end{thebibliography}
 
