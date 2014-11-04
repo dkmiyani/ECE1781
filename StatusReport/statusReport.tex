@@ -454,7 +454,7 @@ dhaval.miyani@utoronto.ca}}
 %performance of the consistency models in the S2E
 %system when finding different types of bugs. We are
 %interested in investigating whether we can identify
-%program “features” (e.g., program length, bug type,
+%program âfeaturesâ (e.g., program length, bug type,
 %etc.) that pose challenges for certain consistency
 %models or present benefits. Some software systems are
 %only exposed to certain kinds of bugs (e.g., a batch
@@ -684,8 +684,7 @@ There is much work in symbolic execution for testing [CITATIONS FROM KLEE 11, 14
  
  In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. 
  
-S2E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S2E, described below. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one
-wishes to analyze and the environment is the rest of the system.
+S2E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S2E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system.  
 
 \begin{itemize}
 \item \textit{Strictly Consistent Concrete Execution (SC-CE):} 
@@ -695,7 +694,7 @@ Unit is symbolically executed while the
 environment is executed concretely.
 \item \textit{Strictly Consistent System-level Execution
 (SC-SE):} Unit and environment are executed
-symbolically -�� this is the only model that
+symbolically - this is the only model that
 executes the environment symbolically.
 \item \textit{Local Consistency (LC):} Similar to SC-UE,
 but it adheres to constraints that the
