@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  3 NOV 2014 18:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  4 NOV 2014 14:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -223,22 +223,24 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 
 
 ]
+Missing character: There is no Â in font ptmr7t!
 Missing character: There is no € in font ptmr7t!
+Missing character: There is no Â in font ptmr7t!
 Missing character: There is no “ in font ptmr7t!
 
-Underfull \hbox (badness 2205) in paragraph at lines 707--711
+Underfull \hbox (badness 2205) in paragraph at lines 704--708
 []\OT1/ptm/m/it/10 Relaxed Con-sis-tency CFG Con-sis-tency (RC-CC):
  []
 
-<s2e-consistency-models.png, id=12, 1081.03876pt x 741.77126pt>
+<s2e-consistency-models.png, id=11, 1081.03876pt x 741.77126pt>
 File: s2e-consistency-models.png Graphic file (type png)
 
 <use s2e-consistency-models.png>
-Package pdftex.def Info: s2e-consistency-models.png used on input line 725.
+Package pdftex.def Info: s2e-consistency-models.png used on input line 722.
 (pdftex.def)             Requested size: 216.81pt x 148.75908pt.
  [2 <./s2e-consistency-models.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 811--812
-[]\OT1/ptm/m/n/10 Create sys-tem-atic performance-accuracy trade-off
+Underfull \hbox (badness 2359) in paragraph at lines 808--809
+\OT1/ptm/m/n/10 off graphs (per ap-pli-ca-tion and per con-sis-tency
  []
 
 [3]
@@ -259,7 +261,7 @@ Before submitting the final camera ready copy, remember to:
 Here is how much of TeX's memory you used:
  2272 strings out of 493117
  36272 string characters out of 6135433
- 103391 words of memory out of 5000000
+ 102391 words of memory out of 5000000
  5732 multiletter control sequences out of 15000+600000
  32397 words of font info for 63 fonts, out of 8000000 for 9000
  1144 hyphenation exceptions out of 8191
@@ -273,7 +275,7 @@ b></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
 </usr/local/texlive/2014/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/lo
 cal/texlive/2014/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texliv
 e/2014/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on statusReport.pdf (4 pages, 231964 bytes).
+Output written on statusReport.pdf (4 pages, 232150 bytes).
 PDF statistics:
  53 PDF objects out of 1000 (max. 8388607)
  36 compressed objects within 1 object stream

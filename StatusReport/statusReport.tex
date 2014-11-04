@@ -355,7 +355,7 @@
 %
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Selecting the Right Consistency Model \\ {\large Determining the performance vs. accuracy tradeoff for S2E's relaxed consistency models}}
+\title{How Much Relaxation Is Too Much? \\ {\large Determining the performance vs. accuracy tradeoff for S2E's relaxed consistency models}}
 
 
 % author names and affiliations
@@ -488,7 +488,7 @@ dhaval.miyani@utoronto.ca}}
 % no \IEEEPARstart
 S2E is a symbolic execution platform that operates directly on
 application binaries for analyzing the
-properties and behavior of software systems. It analyzes programs
+properties and behaviour of software systems. It analyzes programs
 in-vivo (the whole environment)
 within a real software stack (user program, libraries, kernel,
 drivers, etc.) rather than using abstract
@@ -499,8 +499,8 @@ binaries \cite{s2e}.
 
 The goal of this experiment is to evaluate two consistency models in the S2E
 system which do not have predictable accuracy or performance. These
-are the relaxed
-consistency overapproximate and relaxed consistency CFG consistency
+are the Relaxed
+Consistency Overapproximate and Relaxed Consistency CFG Consistency
 models, which are
 described in the Background section. Our primary objective is to
 determine the accuracy of these
@@ -538,7 +538,7 @@ analyses will be prone to false positives as these paths cannot be
 produced by concrete runs \cite{s2e}.
 We expect that the Relaxed Consistency CFG Consistency model will have
 a higher false positive rate and
-lower false positive rate as it functions similar to static analysis
+lower false negative rate as it functions similar to static analysis
 by admitting the infeasible paths.
 Conversely the Relaxed Consistency Overapproximate model would have
 poorer performance (as it uses
@@ -639,7 +639,7 @@ negative rate is expected to be higher with this model.
 
 \section{Background}
 
-There is much work in symbolic execution for testing [CITATIONS FROM KLEE 11, 14$-$16, 20$-$22, 24, 26, 27, 36]. A typical approach for testing is fuzzing [CITE REF], which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values [MAYBE CITE?]. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, [figure 1] shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. 
+There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, Figure \ref{code-fuzzing} shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. 
 
 %\usepackage{listings}
 %\usepackage{color}
@@ -677,10 +677,8 @@ There is much work in symbolic execution for testing [CITATIONS FROM KLEE 11, 14
 	\caption{Code example where fuzzing generally has poor coverage}
 	\label{code-fuzzing}
 \end{figure}
-
- [ADD FIGURE LABEL, ETC.]
  
- Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine "follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the "path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) "the path explosion problem" [CITE], which is due to the exponential growth of paths in a program caused by conditional branches, and (2) "the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). 
+ Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). 
  
  In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. 
  
@@ -717,7 +715,7 @@ Our experiment will focus on evaluating the two latter models: RC-OC and RC-CC. 
 
 There are several differences between S2E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S2E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S2E's SC-SE, but it is limited to code-based selection and one consistency model. S2E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion unlike S2E, which is key to S2E's scalability and low programmer effort.
 
-Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To decrease the number of false positives rate tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools require to learn a new language. As a dynamic analysis framework, S2E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}.
+Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S2E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}.
 
 \begin{figure}[!t]
 \centering
@@ -742,7 +740,7 @@ consistency models before beginning. If one of the consistency models
 cannot find any of these bugs these results will be recorded as a lack
 of accuracy for that model which allotting more execution time would
 not address, meaning that the accuracy vs. performance tradeoff for
-this type of bug and model would nonexistent.
+this type of bug and model would be nonexistent.
 
         \subsection{Dataset}
 
@@ -785,7 +783,7 @@ We will create a script to automate the different runs of our
 experiment. In particular, this script will record the time that a
 given run started and cut off the execution after different amounts of
 time. A unit of time, for example, could be one hour, and testing
-across multiple of said unit (e.g., two hours, three hours, etc.) will
+across multiples of said unit (e.g., two hours, three hours, etc.) will
 permit us to determine the accuracy vs. performance tradeoff discussed
 earlier (if it exists). We may also determine how much time it took
 the different models to find a given bug within a unit by exploiting
@@ -793,7 +791,7 @@ any logging functionality in S2E if necessary
 
 \section{Status}
 
-As this is an evaluation, there are two main stages for the evaluation of the consistency models for S2E: the preparation stage and the experimentation stage. We are currently in the preparation phase:
+As this is an evaluation, there are two main stages for the evaluation of the consistency models for S2E: the preparation phase and the experimentation phase. We are currently in the preparation phase:
  \begin{itemize}
 \item We are setting up S2E and using it on a sample application.  
 \item We are also gathering applications with bugs in them for our data set. We are looking at the bug reports for each application to ensure that it is suitable (i.e., we can establish a ground truth as described earlier). 
@@ -805,9 +803,9 @@ As this is an evaluation, there are two main stages for the evaluation of the co
 This section describes the experiments that will be performed to test S2E's consistency models, specifically RC-CC and RC-OC. For each consistency model, the following experiments will carried out to get the empirical amount of time it takes to catch a bug and the accuracy rate:  
 
 \begin{itemize}
-\item Using the script described in the Approach section we will run each of the three applications for different ?time units? and record the results S2E generates. The time unit could be half an hour, one hour, or several - well fine tune this during the experiment depending on preliminary results. This will determine the number of bugs S2E catches for a given time period (for accuracy).
+\item Using the script described in the Approach section we will run each of the three applications for different ``time units" and record the results S2E generates. The time unit could be half an hour, one hour, or several - we will fine tune this during the experiment based on preliminary results. This will determine the number of bugs S2E catches for a given time period (for measuring accuracy).
 \item  Depending on the bug caught by S2E, a manual analysis of the source code will be performed to determine whether there was an actual bug (based on the ground truth determined earlier). This will provide the accuracy rates: false positives and false negatives. If S2E identified a bug, which manual analysis proves not to be a bug, then the false positive rate will increase. Conversely, the false negative rate will be determined using the bug reports to see if S2E misses a bug that we are certain exists. 
-\item Create systematic performance-accuracy tradeoff graphs (per application and per consistency model). The x-axis of these graphs will be the different ?time units?, whereas the y-axis will be the number (or percentage) of false positives and false negatives (two data lines).
+\item We will create systematic performance-accuracy tradeoff graphs (per application and per consistency model). The x-axis of these graphs will be the different ``time units", whereas the y-axis will be the number (or percentage) of false positives and false negatives (two data lines).
 \end{itemize}
 
 
@@ -879,9 +877,11 @@ BOONSTOPPEL, P., CADAR, C., AND ENGLER, D. RWset: At- tacking path explosion in 
 \bibitem{vul-signature}
 BRUMLEY, D., NEWSOME, J., SONG, D., WANG, H., AND JHA, S. Towards automatic generation of vulnerability-based sig- natures. In Proceedings of the 2006 IEEE Symposium on Security and Privacy (IEEE S\&P 2006).
 
-\bibitem{system-crash}CADAR, C., AND ENGLER, D. Execution generated test cases: How to make systems code crash itself. In Proceedings of the 12th International SPIN Workshop on Model Checking of Soft- ware (SPIN 2005).
+\bibitem{system-crash}
+CADAR, C., AND ENGLER, D. Execution generated test cases: How to make systems code crash itself. In Proceedings of the 12th International SPIN Workshop on Model Checking of Soft- ware (SPIN 2005).
 
-\bibitem{exe}CADAR, C., GANESH, V., PAWLOWSKI, P., DILL, D., AND ENGLER, D. EXE: Automatically generating inputs of death. In Proceedings of the 13th ACM Conference on Computer and Communications Security (CCS 2006).
+\bibitem{exe}
+CADAR, C., GANESH, V., PAWLOWSKI, P., DILL, D., AND ENGLER, D. EXE: Automatically generating inputs of death. In Proceedings of the 13th ACM Conference on Computer and Communications Security (CCS 2006).
 
 \bibitem{bad-input}
 COSTA, M., CASTRO, M., ZHOU, L., ZHANG, L., AND PEINADO, M. Bouncer: Securing software by blocking bad input. In Proceedings of the 21th ACM Symposium on Operating Systems Principles (SOSP 2007).
@@ -908,7 +908,8 @@ SCHWARZ, B., DEBRAY, S., AND ANDREWS, G. Disassembly of executable code revisite
 DIILLIG, I., DILLIG, T., AND ALKEN, A. Sound, complete and scalable path- sensitive analysis. In Conf. on Programming Language Design and Implementation, 2008.
 
 \bibitem{bddbddb}
-LAM, M. S., WHALEY, J., LIVSHITS, V. B., MARTIN, M. C., AVOTS, D., CARBIN, M., AND UNKEL, C. Context-sensitive program analysis asdatabase queries. In Symp. on Principles of Database Systems, 2005.
+LAM, M. S., WHALEY, J., LIVSHITS, V. B., MARTIN, M. C., AVOTS, D., CARBIN, M., AND UNKEL, C. Context-sensitive program analysis as
+database queries. In Symp. on Principles of Database Systems, 2005.
 
 
 \end{thebibliography}
