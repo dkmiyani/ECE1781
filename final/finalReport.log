@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  5 NOV 2014 16:18
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.5.25)  17 NOV 2014 13:00
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**statusReport.tex
-(./statusReport.tex
+**finalReport.tex
+(./finalReport.tex
 LaTeX2e <2014/05/01>
 Babel <3.9k> and hyphenation patterns for 78 languages loaded.
 (./IEEEtran.cls
@@ -133,8 +133,8 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \@float@everytoks=\toks17
 \@floatcapt=\box28
 )
-(./statusReport.aux)
-\openout1 = `statusReport.aux'.
+(./finalReport.aux)
+\openout1 = `finalReport.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 354.
 LaTeX Font Info:    ... okay on input line 354.
@@ -211,10 +211,10 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 642.
+(Font)              <7> on input line 664.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 642.
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 669.
+(Font)              <5> on input line 664.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 691.
 
 
 (/usr/local/texlive/2014/texmf-dist/tex/latex/psnfss/ot1pcr.fd
@@ -228,22 +228,22 @@ Missing character: There is no € in font ptmr7t!
 Missing character: There is no Â in font ptmr7t!
 Missing character: There is no “ in font ptmr7t!
 
-Underfull \hbox (badness 2205) in paragraph at lines 704--708
+Underfull \hbox (badness 2205) in paragraph at lines 726--730
 []\OT1/ptm/m/it/10 Relaxed Con-sis-tency CFG Con-sis-tency (RC-CC):
  []
 
-<s2e-consistency-models.png, id=11, 1081.03876pt x 741.77126pt>
+<s2e-consistency-models.png, id=10, 1081.03876pt x 741.77126pt>
 File: s2e-consistency-models.png Graphic file (type png)
 
 <use s2e-consistency-models.png>
-Package pdftex.def Info: s2e-consistency-models.png used on input line 722.
+Package pdftex.def Info: s2e-consistency-models.png used on input line 744.
 (pdftex.def)             Requested size: 216.81pt x 148.75908pt.
- [2 <./s2e-consistency-models.png>]
-Underfull \hbox (badness 2359) in paragraph at lines 808--809
+ [2]
+Underfull \hbox (badness 2359) in paragraph at lines 830--831
 \OT1/ptm/m/n/10 off graphs (per ap-pli-ca-tion and per con-sis-tency
  []
 
-[3]
+[3 <./s2e-consistency-models.png>]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -257,25 +257,25 @@ Before submitting the final camera ready copy, remember to:
 
 [4
 
-] (./statusReport.aux) ) 
+] (./finalReport.aux) ) 
 Here is how much of TeX's memory you used:
  2272 strings out of 493117
- 36272 string characters out of 6135433
- 102391 words of memory out of 5000000
+ 36263 string characters out of 6135433
+ 104391 words of memory out of 5000000
  5732 multiletter control sequences out of 15000+600000
  32397 words of font info for 63 fonts, out of 8000000 for 9000
  1144 hyphenation exceptions out of 8191
- 37i,6n,23p,1465b,234s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/bas
-e/8r.enc}</usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
-i10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr1
-0.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.p
-fb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pf
-b></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-</usr/local/texlive/2014/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/lo
-cal/texlive/2014/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texliv
-e/2014/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on statusReport.pdf (4 pages, 232155 bytes).
+ 37i,6n,23p,1589b,234s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/base
+/8r.enc}</usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi
+10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10
+.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pf
+b></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
+></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><
+/usr/local/texlive/2014/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/loc
+al/texlive/2014/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive
+/2014/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on finalReport.pdf (4 pages, 233377 bytes).
 PDF statistics:
  53 PDF objects out of 1000 (max. 8388607)
  36 compressed objects within 1 object stream
