@@ -16,7 +16,7 @@ ld -r -o tmpecho.o echo.o process_escape_sequence.o perror_msg.o full_write.o
 	
 */
 //#include "echo.h"
-//#include <stdio.h>
+#include <stdio.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -27,16 +27,18 @@ extern int lbb_main(char**argv);
 
 int main()
 {
-    char* strarray[] = {"echo", "hello world!"};
+    char* strarray[] = {"echo", "hello world!", 0};
     /*strarray[0] = malloc(256*sizeof(char));
     strarray[1] = malloc(256*sizeof(char));
 
     strcpy(strarray[0], "echo");
     strcpy(strarray[1], "hello world!");
 */
-    //lbb_main(strarray);
+    lbb_main(strarray);
 	//printf("return value = %d", ret);
-    printecho(2, strarray);
+    //printecho(2, strarray);
+
+    printf("done.\n");
 
 	//free(strarray[0]);
 	//free(strarray[1]);
