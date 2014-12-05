@@ -11,6 +11,7 @@
 	export LD_LIBRARY_PATH=/path/to/0_lib:$LD_LIBRARY_PATH
 
 	./test
+<<<<<<< HEAD
 
 ld -r -o tmpecho.o echo.o process_escape_sequence.o perror_msg.o full_write.o
 	ar -cvq libbbecho.a tmpecho.o
@@ -40,11 +41,27 @@ int main()
 
 	//free(strarray[0]);
 	//free(strarray[1]);
+=======
+	
+*/
+
+
+extern int lbb_main(char **argv);
+
+int main()
+{
+    char* strarray[] = {"echo", "hello world!", 0};
+    lbb_main(strarray);
+>>>>>>> cc38cc69d27375301e070933d112117f6ec6e685
 
     return 0;
 }
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc38cc69d27375301e070933d112117f6ec6e685
 /*
 
  compile this file as follows:
@@ -61,13 +78,21 @@ int main()
 
 */
 
+<<<<<<< HEAD
 /*
 #include "echo.h"
+=======
+/*#include "echo.h"
+>>>>>>> cc38cc69d27375301e070933d112117f6ec6e685
 
 int main() {
 	char* str[] = {"unused string", "it works!"};
 	printecho(2, str);
 	return 0;
+<<<<<<< HEAD
 }
 */
 
+=======
+}*/
+>>>>>>> cc38cc69d27375301e070933d112117f6ec6e685
