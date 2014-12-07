@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  6 DEC 2014 22:42
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  6 DEC 2014 22:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -311,12 +311,24 @@ Underfull \hbox (badness 2150) in paragraph at lines 622--623
  []
 
 [2 <./s2e-consistency-models.png>]
-Missing character: There is no Ð in font ptmr7t!
-Missing character: There is no Õ in font ptmr7t!
-Missing character: There is no Ð in font ptmr7t!
-Missing character: There is no ¯ in font ptmr7t!
-Missing character: There is no Ð in font ptmr7t!
-Missing character: There is no Õ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
 
 
 ** Conference Paper **
@@ -348,7 +360,7 @@ fb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb>
 sr/local/texlive/2012/texmf-dist/fonts/type1/urw/courier/ucrb8a.pfb></usr/local
 /texlive/2012/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2
 012/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on finalReport.pdf (3 pages, 234773 bytes).
+Output written on finalReport.pdf (3 pages, 235009 bytes).
 PDF statistics:
  54 PDF objects out of 1000 (max. 8388607)
  37 compressed objects within 1 object stream

@@ -20,7 +20,7 @@
 %% Legal Notice:
 %% This code is offered as-is without any warranty either expressed or
 %% implied; without even the implied warranty of MERCHANTABILITY or
-%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% FITNESS FOR A PARTICULAR PURPOSE!
 %% User assumes all risk.
 %% In no event shall IEEE or any contributor to this code be liable for
 %% any damages or losses, including, but not limited to, incidental,
@@ -147,7 +147,7 @@
 % graphicx was written by David Carlisle and Sebastian Rahtz. It is
 % required if you want graphics, photos, etc. graphicx.sty is already
 % installed on most LaTeX systems. The latest version and documentation can
-% be obtained at: 
+% be obtained at:
 % http://www.ctan.org/tex-archive/macros/latex/required/graphics/
 % Another good source of documentation is "Using Imported Graphics in
 % LaTeX2e" by Keith Reckdahl which can be found as epslatex.ps or
@@ -272,7 +272,7 @@
 % IEEEtran.cls handling of captions and this will result in nonIEEE style
 % figure/table captions. To prevent this problem, be sure and preload
 % caption.sty with its "caption=false" package option. This is will preserve
-% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later 
+% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later
 % (recommended due to many improvements over 1.2) of subfig.sty supports
 % the caption=false option directly:
 %\usepackage[caption=false,font=footnotesize]{subfig}
@@ -392,51 +392,51 @@ dhaval.miyani@utoronto.ca}}
 
 \section{Introduction}
 
-While the key idea behind symbolic execution arose almost forty 
+While the key idea behind symbolic execution arose almost forty
 years ago \cite{select}, it has only recently become practical due to
-advances in constraint satisfiability \cite{satisfiability} and scalable approaches 
+advances in constraint satisfiability \cite{satisfiability} and scalable approaches
 with mixed symbolic and concrete execution \cite{systems-crash, dart}.
-A 2011 study has shown that symbolic execution tools are beginning to 
-be used increasingly in industrial practice at corporations such as Microsoft, 
+A 2011 study has shown that symbolic execution tools are beginning to
+be used increasingly in industrial practice at corporations such as Microsoft,
 NASA, IBM, and Fujitsu \cite{symb-ex-practice}. This proliferation shows the
-importance of new symbolic execution tools and the impact they will have 
+importance of new symbolic execution tools and the impact they will have
 on the industry as they improve.
 
-S$^2$E is a symbolic execution platform that can operate directly on application 
-binaries for analyzing the properties and behaviour of software systems. It 
-analyzes programs in-vivo (the whole environment) within a real software stack 
-(user program, libraries, kernel, drivers, etc.) rather than using abstract models 
-of these layers. It is commonly used for performance profiling, reverse engineering 
+S$^2$E is a symbolic execution platform that can operate directly on application
+binaries for analyzing the properties and behaviour of software systems. It
+analyzes programs in-vivo (the whole environment) within a real software stack
+(user program, libraries, kernel, drivers, etc.) rather than using abstract models
+of these layers. It is commonly used for performance profiling, reverse engineering
 of proprietary software, and finding bugs in user-mode and kernel-mode
-binaries \cite{s2e}. S$^2$E is a complex system due to the rich features it has 
-(particularly the fact that it runs inside of a VMM). This complexity, however, comes 
-with the price of being difficult to start using on existing software. 
+binaries \cite{s2e}. S$^2$E is a complex system due to the rich features it has
+(particularly the fact that it runs inside of a VMM). This complexity, however, comes
+with the price of being difficult to start using on existing software.
 
 The goal of this experiment is to understand how a complex system such
-as S$^2$E can be applied to existing software and document the process. 
+as S$^2$E can be applied to existing software and document the process.
 In particular, we are interested in seeing whether program inputs and code
 need to be sanitized in some way to become amenable to dynamic analysis
-via symbolic execution. Taking inspiration from KLEE \cite{klee}, we will be 
-comparing the semantics of two implementations of (supposedly) the exact 
-same suite of programs: the GNU Coreutils utility suite and the Busybox 
-embedded system suite. 
+via symbolic execution. Taking inspiration from KLEE \cite{klee}, we will be
+comparing the semantics of two implementations of (supposedly) the exact
+same suite of programs: the GNU Coreutils utility suite and the Busybox
+embedded system suite.
 
 Comparing the semantics of two implementations can have many real world
 applications. In the field of computer security, for example, the ability to compare
 the semantics of a software compiled from source with a pre-compiled binary
 could reveal malicious or accidental backdoors. In particular, the fact that S$^2$E
-runs in a VMM would allow for it to be used to test kernel level programs such as 
+runs in a VMM would allow for it to be used to test kernel level programs such as
 file systems (or compare read and write operations different file systems).
 
-We have encountered several challenges in using the S$^2$E platform; one 
-in particular forced us to change the initial goal of our experiment (evaluating 
+We have encountered several challenges in using the S$^2$E platform; one
+in particular forced us to change the initial goal of our experiment (evaluating
 two consistency models from S$^2$E) due to the fact that not all of the six
-consistency models described in \cite{s2e} are actually implemented in the 
+consistency models described in \cite{s2e} are actually implemented in the
 platform. Our biggest challenge with this project was trying to modify the programs
-of interest in such a way that they could be directly comparable. The different 
+of interest in such a way that they could be directly comparable. The different
 approaches we tried will be thoroughly discussed in the Experiments section of this
 paper along with our own explanations about why they failed or succeeded and
-what impact these choices had on the program analysis as a whole. 
+what impact these choices had on the program analysis as a whole.
 
 %\subsection{Subsection Heading Here}
 %Subsection text here.
@@ -462,7 +462,7 @@ what impact these choices had on the program analysis as a whole.
 %\begin{figure}[!t]
 %\centering
 %\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
+% where an .eps filename suffix will be assumed under latex,
 % and a .pdf suffix will be assumed for pdflatex; or what has been declared
 % via \DeclareGraphicsExtensions.
 %\caption{Simulation Results}
@@ -496,7 +496,7 @@ what impact these choices had on the program analysis as a whole.
 % reference/describe all of them (a), (b), etc., within the main caption.
 
 
-% An example of a floating table. Note that, for IEEE style tables, the 
+% An example of a floating table. Note that, for IEEE style tables, the
 % \caption command should come BEFORE the table. Table text will default to
 % \footnotesize as IEEE normally uses this smaller font for tables.
 % The \label must come after \caption as always.
@@ -531,7 +531,7 @@ what impact these choices had on the program analysis as a whole.
 
 \section{Background}
 
-There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, Listing \ref{code-fuzzing} shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. 
+There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, Listing \ref{code-fuzzing} shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution.
 
 %  --------------------- CODE SYNTAX HIGHLIGHTING --------------------- %
 
@@ -540,7 +540,7 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 \definecolor{myred}{rgb}{0.6,0,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
-\definecolor{mygray}{gray}{0.25} 
+\definecolor{mygray}{gray}{0.25}
 
 \lstdefinestyle{C}{
 	language=C,
@@ -566,22 +566,22 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 
 \begin{lstlisting}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
 if (x == 10) {
-	// path 1  
+	// path 1
 } else {
 	// path 2
 }
-\end{lstlisting} 
- 
- Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). 
- 
- In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. 
- 
-S$^2$E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S$^2$E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system.  
+\end{lstlisting}
+
+ Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.).
+
+ In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment.
+
+S$^2$E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S$^2$E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system.
 
 \begin{itemize}
-\item \textit{Strictly Consistent Concrete Execution (SC-CE):} 
+\item \textit{Strictly Consistent Concrete Execution (SC-CE):}
 No symbolic execution in unit or environment.
-\item \textit{Strictly Consistent Unit-level Execution (SC-UE):} 
+\item \textit{Strictly Consistent Unit-level Execution (SC-UE):}
 Unit is symbolically executed while the
 environment is executed concretely.
 \item \textit{Strictly Consistent System-level Execution
@@ -595,13 +595,13 @@ return values.
 \item \textit{Relaxed Consistency Overapproximate
 Consistency (RC-OC):} Similar to LC, but it
 ignores the constraints from the environment/unit API contracts.
-\item \textit{Relaxed Consistency CFG Consistency (RC-CC):} 
-Similar to SC-UE, but like static analysis it can explore any 
+\item \textit{Relaxed Consistency CFG Consistency (RC-CC):}
+Similar to SC-UE, but like static analysis it can explore any
 path in the unit's inter-procedural control flow graph (even
 infeasible ones).
 \end{itemize}
 
-There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort. 
+There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort.
 
 Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}.
 
@@ -628,7 +628,7 @@ In theory:
 Current status of implementation.
 
 \begin{itemize}
-	\item It isn't actually working since our lives are awful. 
+	\item It isn't actually working since our lives are awful.
 	\item The world is a terrible place.
 \end{itemize}
 
@@ -644,7 +644,7 @@ Also explanations of why things didn't work can be long and stuff.
     \item Tried to run the echo binaries directly using popen and fread
     \item Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
     \item Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
-    \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout... 
+    \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout...
 \end{itemize}
 
 \section{Conclusion}
@@ -652,7 +652,9 @@ Also explanations of why things didn't work can be long and stuff.
 Did your results meet expectations?
 
 \begin{itemize}
-	\item Nothing worked, the world is a horrible place. 
+	\item Nothing worked, the world is a horrible place.
+  \item As a sort of lessons learned: lack of documentation and an incomplete understanding of how S2E symbolically executes code led to a lot of mistakes.
+  \item Also the implications of symbolic execution - do we really need to use the same symbolic input on each? If it's not concolic, does it really matter?
 \end{itemize}
 
 
@@ -699,8 +701,8 @@ Did your results meet expectations?
 %in Dependable Systems, 2009.
 %
 %\bibitem{klee}
-%C.~Cadar, D.~Dunbar, and D.~R. Engler, \emph{KLEE: 
-%Unassisted and automatic generation of high-coverage tests 
+%C.~Cadar, D.~Dunbar, and D.~R. Engler, \emph{KLEE:
+%Unassisted and automatic generation of high-coverage tests
 %for complex systems programs}. In Symp. on Operating Systems
 %Design and Implementation, 2008.
 
@@ -711,26 +713,26 @@ in Dependable Systems, 2009.
 
 \bibitem{symb-ex-practice}
 CADAR, C., GODEFROID, P., KHURSHID, S., PASAREANU, C., SEN, K., TILLMANN, N., AND VISSER, W.
-Symbolic execution for software testing in practice Ð preliminary assessment. In ICSE ImpactÕ11, May 2011.
+Symbolic execution for software testing in practice ï¿½ preliminary assessment. In ICSE Impactï¿½11, May 2011.
 
 \bibitem{select}
-BOYER, R. S., ELSPAS, B., AND LEVITT, K. N. 
+BOYER, R. S., ELSPAS, B., AND LEVITT, K. N.
 SELECT - a formal system for testing and debugging programs by symbolic execution.
-SIGPLAN Not., 10:234Ð245, 1975.
+SIGPLAN Not., 10:234ï¿½245, 1975.
 
 \bibitem{satisfiability}
-DE MOURA, L. AND BJ¯RNER, N. 
-Satisfiability modulo theories: introduction and applications. 
-Commun. ACM, 54:69Ð77, Sept. 2011.
+DE MOURA, L. AND BJï¿½RNER, N.
+Satisfiability modulo theories: introduction and applications.
+Commun. ACM, 54:69ï¿½77, Sept. 2011.
 
 \bibitem{systems-crash}
 CADAR, C. AND ENGLER, D.
-Execution generated test cases: How to make systems code crash itself. 
-In SPINÕ05, Aug 2005.
+Execution generated test cases: How to make systems code crash itself.
+In SPINï¿½05, Aug 2005.
 
 \bibitem{klee}
-CADAR, C., DUNBAR, AND ENGLER, D.R. 
-KLEE: Unassisted and automatic generation of high-coverage tests 
+CADAR, C., DUNBAR, AND ENGLER, D.R.
+KLEE: Unassisted and automatic generation of high-coverage tests
 for complex systems programs. In Symp. on Operating Systems
 Design and Implementation, 2008.
 
@@ -785,5 +787,3 @@ database queries. In Symp. on Principles of Database Systems, 2005.
 
 % that's all folks
 \end{document}
-
-
