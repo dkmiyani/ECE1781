@@ -434,7 +434,7 @@ two consistency models from S$^2$E) due to the fact that not all of the six
 consistency models described in \cite{s2e} are actually implemented in the 
 platform. Our biggest challenge with this project was trying to modify the programs
 of interest in such a way that they could be directly comparable. The different 
-approaches we tried will be thoroughly discussed in the Approach section of this
+approaches we tried will be thoroughly discussed in the Experiments section of this
 paper along with our own explanations about why they failed or succeeded and
 what impact these choices had on the program analysis as a whole. 
 
@@ -601,12 +601,6 @@ path in the unit's inter-procedural control flow graph (even
 infeasible ones).
 \end{itemize}
 
-Our experiment will focus on evaluating the two latter models: RC-OC and RC-CC. These models are of particular interest because we cannot accurately predict the accuracy or performance of these two models in contrast to the other four models \cite{s2e}, as described in the Introduction section. 
-
-% TODO: describe difference between RC-OC and RC-CC in a sentence or two. 
-
-%And thus, Relaxed Consistency models allow us to tackle the path explosion problem.
-
 There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort. 
 
 Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}.
@@ -619,87 +613,46 @@ Static analysis is performed without executing the program in question and has k
 \end{figure}
 
 \section{Approach}
-Here we discuss the research methodology used in preparation for the
-evaluation, separated into four parts.
 
-        \subsection{Sanity Check}
+Details of the research methodology or approach taken in the project.
 
-First, we will be ensuring that these S$^2$E models function as we would
-expect and that they are capable of detecting the different types of
-bugs we
-will use in our experiments. We will write a few short ($<$ 100 LOC)
-dummy programs with different bugs (e.g., null pointer dereference,
-divide by zero, buffer overflow, etc.) to determine coverage of the
-consistency models before beginning. If one of the consistency models
-cannot find any of these bugs these results will be recorded as a lack
-of accuracy for that model which allotting more execution time would
-not address, meaning that the accuracy vs. performance tradeoff for
-this type of bug and model would be nonexistent.
-
-        \subsection{Dataset}
-
-We will select a diverse set of programs to allow us to determine
-whether different program characteristics (e.g., code length,
-interactions with the environment, etc.) give accuracy or performance
-gains for either model. The three programs will be open source and
-have a bug reporting system such that we can use these resources when
-establishing a ground truth (see next subsection). Three programs will
-be selected based on different levels of interaction with the
-environment.
-
-\begin{enumerate}
-        \item A web server (e.g., Apache), which we expect to have a lot of
-network usage (and thus system calls)
-        \item A database (e.g., SQLite), which we expect to have a lot of
-file i/o (and thus system calls)
-        \item A computation heavy application (e.g., Fourier Transform
-calculator), which we expect to have minimal interaction with the
-environment (not many system calls are expected)
-\end {enumerate}
-
-        \subsection{Ground Truth}
-
-We will look at bug reports for current (or older, if necessary)
-versions of the selected programs to determine what bugs we expect S$^2$E
-to find and what (if any) bug types we may need to inject. This will
-enable us to establish a ground truth for the false negatives when
-measuring the accuracy of the models. Of course, S$^2$E may find yet more
-bugs than those identified, so access to the source code will be
-necessary to verify any other bugs. This analysis will allow us to
-determine the false positive rate or approximate it depending on how
-many bugs S$^2$E finds in a given application. This approximation may be
-necessary due to the manual effort required to label the bugs as valid
-or invalid.
-
-        \subsection{Measurement}
-
-We will create a script to automate the different runs of our
-experiment. In particular, this script will record the time that a
-given run started and cut off the execution after different amounts of
-time. A unit of time, for example, could be one hour, and testing
-across multiples of said unit (e.g., two hours, three hours, etc.) will
-permit us to determine the accuracy vs. performance tradeoff discussed
-earlier (if it exists). We may also determine how much time it took
-the different models to find a given bug within a unit by exploiting
-any logging functionality in S$^2$E if necessary
+In theory:
+\begin{itemize}
+    \item Run each program with a symbolic input
+    \item Compare the output of the two programs with s2e\_assert (which gives more information than a regular assert)
+    \item Analyze any differences to identify semantic differences between implementations (e.g., corner cases where they each handle an error differently)
+\end{itemize}
 
 \section{Status}
 
-As this is an evaluation, there are two main stages for the evaluation of the consistency models for S$^2$E: the preparation phase and the experimentation phase. We are currently in the preparation phase:
- \begin{itemize}
-\item We have set up S$^2$E and used it on a sample application.  
-\item We are also gathering applications with bugs in them for our data set. We are looking at the bug reports for each application to ensure that it is suitable (i.e., we can establish a ground truth as described earlier). 
-\item Furthermore, we have created some sample programs injected with different types of bugs for sanity testing. This ensures that each of the two consistency models are able to catch the bugs from these sample programs (as described in the approach).  
-\end{itemize}
-
-
-\section{Evaluation}
-This section describes the experiments that will be performed to test S$^2$E's consistency models, specifically RC-CC and RC-OC. For each consistency model, the following experiments will carried out to get the empirical amount of time it takes to catch a bug and the accuracy rate:  
+Current status of implementation.
 
 \begin{itemize}
-\item Using the script described in the Approach section we will run each of the three applications for different ``time units" and record the results S$^2$E generates. The time unit could be half an hour, one hour, or several - we will fine tune this during the experiment based on preliminary results. This will determine the number of bugs S$^2$E catches for a given time period (for measuring accuracy).
-\item  Depending on the bug caught by S$^2$E, a manual analysis of the source code will be performed to determine whether there was an actual bug (based on the ground truth determined earlier). This will provide the accuracy rates: false positives and false negatives. If S$^2$E identified a bug, which manual analysis proves not to be a bug, then the false positive rate will increase. Conversely, the false negative rate will be determined using the bug reports to see if S$^2$E misses a bug that we are certain exists. 
-\item We will create systematic performance-accuracy tradeoff graphs (per application and per consistency model). The x-axis of these graphs will be the different ``time units", whereas the y-axis will be the number (or percentage) of false positives and false negatives (two data lines).
+	\item It isn't actually working since our lives are awful. 
+	\item The world is a terrible place.
+\end{itemize}
+
+\section{Experiments}
+
+Results of experiments that were performed.
+
+CODE SNIPPETS MIGHT MAKE THIS LONGER - ONE PER APPROACH TO SHOW WHAT WE DID.\\
+Also explanations of why things didn't work can be long and stuff.
+
+\begin{itemize}
+    \item Tried running the analysis directly on a binary (no tester program invoking the program), but could not use this to compare two programs since we weren't certain the inputs would be the same (although is this really true with symbolic execution? I HAVE NO IDEA)
+    \item Tried to run the echo binaries directly using popen and fread
+    \item Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
+    \item Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
+    \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout... 
+\end{itemize}
+
+\section{Conclusion}
+
+Did your results meet expectations?
+
+\begin{itemize}
+	\item Nothing worked, the world is a horrible place. 
 \end{itemize}
 
 
