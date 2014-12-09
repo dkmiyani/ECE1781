@@ -160,7 +160,7 @@ Unit is symbolically executed while the
 environment is executed concretely.
 \item \textit{Strictly Consistent System-level Execution
 (SC-SE):} Unit and environment are executed
-symbolically - this is the only model that
+symbolically - this is the only model that
 executes the environment symbolically.
 \item \textit{Local Consistency (LC):} Similar to SC-UE,
 but it adheres to constraints that the
@@ -190,18 +190,17 @@ Static analysis is performed without executing the program in question and has k
 
 \section{Approach}
 
-[MARIANA] Details of the research methodology or approach taken in the project.
+The high level approach we took to use S2E for equivalence testing was as follows:
 
-In theory:
-\begin{itemize}
-  \item Run each program with a symbolic input
-  \item Compare the output of the two programs with s2e\_assert (which gives more information than a regular assert)
-  \item Analyze any differences to identify semantic differences between implementations (e.g., corner cases where they each handle an error differently)
-\end{itemize}
+\begin{enumerate}
+  \item Run each program with symbolic input (using {\tt s2e\_make\_symbolic()} from a test application invoking the functions or directly on the binary with option {\tt --sym-args}).
+  \item Compare the output of the Busybox and GNU Coreutils implementation of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S2E and generates sample input which violates the assertion.
+  \item Using the sample input generated, manually analyze the two implementations (possibly using GNU Debugger) to identify semantic differences between the two implementations. 
+\end{enumerate}
 
-% ---------------------- METHODOLOGY ---------------------- %
+% ---------------------- IMPLEMENTATION ---------------------- %
 
-\section{Methodology}
+\section{Implementation}
 
 Results of experiments that were performed.
 
