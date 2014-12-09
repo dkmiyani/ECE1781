@@ -202,19 +202,28 @@ The high level approach we took to use S2E for equivalence testing was as follow
 
 \section{Implementation}
 
-Results of experiments that were performed.
+In this section we will describe all of the ways in which we tried to symbolically execute the two binaries (from GNU Coreutils and Busybox) to perform equivalence testing. 
 
-CODE SNIPPETS MIGHT MAKE THIS LONGER - ONE PER APPROACH TO SHOW WHAT WE DID.\\
-Also explanations of why things didn't work can be long and stuff.
+\subsection{Running the binary directly}
 
-\begin{itemize}
-  \item [MARIANA] Tried running the analysis directly on a binary (no tester program invoking the program), but could not use this to compare two programs since we weren't certain the inputs would be the same (although is this really true with symbolic execution? I HAVE NO IDEA)
-  \item [MARIANA] Tried to run the echo binaries directly using popen and fread
-  \item [DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
-  \item [MARIANA] Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
-  \item [MARIANA] After all of these attempts we decided to look into how KLEE ended up doing this comparison of coreutils and busybox. We discovered that KLEE was symbolically modifying stdout (klee option {\tt -sym-stdout}). Since S2E is built upon KLEE we tried to add this flag into the klee arguments portion of the config.lua file for S2E (include listing with config file we used for our testing? or is it not relevant because testcasegeneration didn't even seem to work...), however this option did not exist, most likely due to the fact that s2e is meant to be in vivo and use a real software stack (i.e., not model any of those layers).
-  \item [DHAVAL] Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [WORKED]
-\end{itemize}
+Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and did not provide information regarding the semantic differences between the two implementations. Listing \ref{s2e-binary} shows the (abridged) results of symbolically executing GNU Coreutils' implementation of {\tt echo}. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. 
+
+\begin{lstlisting}[style=C, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Output of symbolically executing GNU Coreutils {\tt echo} with S$^2$E}]
+PUT A LISTING HERE WITH THE OUTPUT OF EXECUTING S2E DIRECTLY ON THE ECHO BINARY
+\end{lstlisting}
+
+\subsection{Creating libraries for each implementation}
+
+[DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
+
+\subsection{Redirecting stdout to a buffer}
+
+[MARIANA] Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed because busybox does not use stdio). 
+
+After all of these attempts we decided to look into how KLEE ended up doing this comparison of coreutils and busybox. We discovered that KLEE was symbolically modifying stdout (klee option {\tt -sym-stdout}). Since S2E is built upon KLEE we tried to add this flag into the klee arguments portion of the config.lua file for S2E (include listing with config file we used for our testing? or is it not relevant because testcasegeneration didn't even seem to work...), however this option did not exist, most likely due to the fact that s2e is meant to be in vivo and use a real software stack (i.e., not model any of those layers).
+
+\subsection{Modifying the implementations to not use stdout}
+[DHAVAL] Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [SUCCESS!]
 
 % ---------------------- EXPERIMENTS ---------------------- %
 
