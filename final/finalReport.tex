@@ -618,9 +618,9 @@ Details of the research methodology or approach taken in the project.
 
 In theory:
 \begin{itemize}
-    \item Run each program with a symbolic input
-    \item Compare the output of the two programs with s2e\_assert (which gives more information than a regular assert)
-    \item Analyze any differences to identify semantic differences between implementations (e.g., corner cases where they each handle an error differently)
+  \item Run each program with a symbolic input
+  \item Compare the output of the two programs with s2e\_assert (which gives more information than a regular assert)
+  \item Analyze any differences to identify semantic differences between implementations (e.g., corner cases where they each handle an error differently)
 \end{itemize}
 
 \section{Status}
@@ -640,11 +640,24 @@ CODE SNIPPETS MIGHT MAKE THIS LONGER - ONE PER APPROACH TO SHOW WHAT WE DID.\\
 Also explanations of why things didn't work can be long and stuff.
 
 \begin{itemize}
-    \item Tried running the analysis directly on a binary (no tester program invoking the program), but could not use this to compare two programs since we weren't certain the inputs would be the same (although is this really true with symbolic execution? I HAVE NO IDEA)
-    \item Tried to run the echo binaries directly using popen and fread
-    \item Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
-    \item Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
-    \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout...
+  \item Tried running the analysis directly on a binary (no tester program invoking the program), but could not use this to compare two programs since we weren't certain the inputs would be the same (although is this really true with symbolic execution? I HAVE NO IDEA)
+  \item Tried to run the echo binaries directly using popen and fread
+  \item Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
+  \item Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
+  \item After all of these attempts we decided to look into how KLEE ended up doing this comparison of coreutils and busybox. We discovered that KLEE was symbolically modifying stdout (klee option {\tt -sym-stdout}). Since S2E is built upon KLEE we tried to add this flag into the klee arguments portion of the config.lua file for S2E (include listing with config file we used for our testing? or is it not relevant because testcasegeneration didn't even seem to work...), however this option did not exist, most likely due to the fact that s2e is meant to be in vivo and use a real software stack (i.e., not model any of those layers).
+  \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [WORKED]
+\end{itemize}
+
+\section{Results}
+
+\begin{itemize}
+  \item modified echo to return strings for both implementations
+  \item got 4 assertions that failed between the two implementations
+  \item manually inspected the programs with gdb given the inputs provided by s2e (e.g., 0x2c02) to step through the execution and see where execution differed
+  \item discovered a bug in our own modifications to coreutils echo where we were adding a space instead of newlines
+  \item each time we run s2e we get a different number of states even though they should hypothetically always go through the same number of states
+  \item one example of a difference between the implementations of echo is that both echo's print a space between strings found in argv, however the condition preceding the addition of this space is different between the implementations (for coreutils) if there is at least one string to print (check argc > 0), a space is always added after the word whereas busybox only prints a space after a word if there is another string to print (breaks if *argv++ not NULL).
+  \item two input patterns that failed the asserts (1) ended with 0x00 (i.e., NULL character), and (2) ended with extended ascii values (i.e., expressed as a signed integer -0x45 which is a symbol)
 \end{itemize}
 
 \section{Conclusion}
@@ -657,6 +670,13 @@ Did your results meet expectations?
   \item Also the implications of symbolic execution - do we really need to use the same symbolic input on each? If it's not concolic, does it really matter?
 \end{itemize}
 
+\section{Future Work}
+
+\begin{itemize}
+  \item Perform these tests on the rest of the utilities in busybox and gnu coreutils.
+  \item Try testing other programs that don't use stdout and determine if they present any different challenges.
+  \item Figure out how to change the VMM parameters for S2E (e.g., give it more memory). Discuss how even building from source had its problems as we could not transfer files from host to guest when we built S2E manually.
+\end{itemize}
 
 % conference papers do not normally have an appendix
 
@@ -781,9 +801,6 @@ database queries. In Symp. on Principles of Database Systems, 2005.
 
 
 \end{thebibliography}
-
-
-
 
 % that's all folks
 \end{document}
