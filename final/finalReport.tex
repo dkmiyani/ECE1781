@@ -139,6 +139,29 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 	escapeinside={\%*}{*}
 }
 
+\lstdefinestyle{Lua}{
+	xleftmargin=10pt,
+	xrightmargin=0pt,
+	basicstyle=\footnotesize\bfseries\ttfamily,
+	showspaces=false,
+	showtabs=false,
+	breaklines=true,
+	showstringspaces=false,
+	breakatwhitespace=true,
+  	morecomment=[l]{--}, % single line comments
+	morestring=[b]",% backslash escaped strings
+	commentstyle=\color{mygreen},
+	keywordstyle=\color{myblue},
+	stringstyle=\color{myred},
+	numbers=left,
+	numbersep=5pt,
+	numberstyle=\footnotesize\color{mygray},
+	tabsize=4,
+	frame=TB,
+	framesep=5pt,
+	escapeinside={\%*}{*}
+}
+
 \begin{lstlisting}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
 if (x == 10) {
 	// path 1
@@ -259,23 +282,99 @@ At this point we decided to simply write the result to a file (omitting lines 1 
 
 \section{Experiments}
 
-For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox 1.22.1 (the latest versions at the time of this writing). 
+For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox 1.22.1 (the latest versions at the time of this writing). The configuration file used to run S$^2$E is provided in Listing \ref{s2e-config} for reference. The use of the {\tt ExecutionTracer} on line 13 and the {\tt TestCaseGenerator} on line 16 were necessary to output the constraints for each state and generate concrete values for failed asserts, respectively. \\
 
-Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the code in Listing \ref{s2e-equ}. \\
+\begin{lstlisting}[style=Lua, label=s2e-config, abovecaptionskip=2ex, captionpos=b, caption={S$^2$E configuration file used for experiment}]
+-- File: config.lua
+s2e = {
+  kleeArgs = {
+    --Switch states only when the current one terminates
+    "--use-dfs-search"
+  }
+}
+plugins = {
+  -- Enable S2E custom opcodes
+  "BaseInstructions",
+
+  -- Basic tracing required for test case generation
+  "ExecutionTracer",
+
+  -- Enable the test case generator plugin
+  "TestCaseGenerator",
+}
+
+pluginsConfig = {}
+\end{lstlisting}
+
+Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the code in Listing \ref{s2e-equ}. We must allocate the input character arrays on the heap (lines 7-9) due to [DHAVAL]. We then create an input variable x, make it symbolic, and add it to the input character array before enabling forking in S$^2$E (line 17). On lines 18-19 we call the tow implementations of {\tt echo} (GNU Coreutils = {\tt printecho}, Busybox = {\tt printbbecho}), on line 21 we assert that the two implementations produce the same result, and on line 23 we kill the state (this code is only reached if the assert was true. \\
 
 \begin{lstlisting}[style=C, label=s2e-equ, abovecaptionskip=2ex, captionpos=b, caption={Program used to perform equivalence testing on GNU Coreutils and Busybox}]
-[INSERT CODE HERE]
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "s2e.h"
+
+int main() {
+	char** str = malloc(2*sizeof(char*));
+	str[0] = malloc(2*sizeof(char));
+	str[1] = malloc(2*sizeof(char));
+	memset(str[0], 0, 2);
+	memset(str[1], 0, 2);
+
+	unsigned char x[2];
+	s2e_make_symbolic(&x, 2, "x");
+	memcpy(str[1], x, 2);
+
+	s2e_enable_forking();
+	char * out1 = printecho(2, str);
+	char * out2 = printbbecho(2, str);
+
+	s2e_assert(memcmp(out1, out2, 2)==0);
+    
+	s2e_kill_state(0, "Success");
+	return 0;
+}
 \end{lstlisting}
 
-Our analysis produced the results similar to those shown in listing \ref{s2e-equiv-result} which provides the constraints for that state (line XX) and also a sample test case that satisfies those constraints (line XX). Such output exists for all states including those that exit normally (i.e., do not fail the assert). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that ended with extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
-
-\begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
-[INSERT CODE HERE]
-\end{lstlisting}
+Our analysis produced the results similar to those shown in listing \ref{s2e-equiv-result} which provides the constraints for that state (lines 2-7 for state 6) and also a sample test case that satisfies those constraints (lines 29-31 for state 6). Such output exists for states that fail there assertion (state 6) as well those that exit normally (state 7). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that ended with extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
 
 Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why their were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argv {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
 
-We also had a personal experience of S$^2$E finding a bug due to an implementation error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. 
+We also had a personal experience of S$^2$E finding a bug due to an implementation error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. \\
+
+\begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
+131 [State 6] Forking state 6 at pc = 0x804923a into states:
+    state 6 with condition (Eq (w32 0)
+    (And w32 (Add w32 (w32 4294967227)
+        (Concat w32 (w8 0)
+            (Concat w24 (w8 0)
+                (Concat w16 (w8 0) (Read w8 1
+                    v0_x_0))))) (w32 255)))
+    state 7 with condition (Not (Eq (w32 0)
+    (And w32 (Add w32 (w32 4294967227)
+        (Concat w32 (w8 0)
+            (Concat w24 (w8 0)
+                (Concat w16 (w8 0) (Read w8 1 
+                    v0_x_0)))))(w32 255))))
+...
+131 [State 6] Switching from state 6 to state 7
+132 [State 7] Killing state 7
+132 [State 7] Terminating state 7 with message 'State was terminated by opcode
+            message: "Success"
+            status: 0'
+TestCaseGenerator: processTestCase of state 7 at address 0x8048cb9
+
+v0_x_0: 2d -30 0
+132 [State 7] Switching from state 7 to state 6
+...
+132 [State 6] Killing state 6
+132 [State 6] Terminating state 6 with message 'State was terminated by opcode
+            message: "Assertion failed: memcmp(out1, out2, 2)==0"
+            status: 0'
+TestCaseGenerator: processTestCase of state 6 at address 0x8048cb9
+
+v0_x_0: 2d -45 E
+\end{lstlisting}
 
 % ---------------------- STATUS ---------------------- %
 
