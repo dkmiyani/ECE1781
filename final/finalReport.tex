@@ -22,6 +22,7 @@
 \usepackage{float}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{ipa}
 
 \begin{document}
 
@@ -206,21 +207,50 @@ In this section we will describe all of the ways in which we tried to symbolical
 
 \subsection{Running the binary directly}
 
-Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and did not provide information regarding the semantic differences between the two implementations. Listing \ref{s2e-binary} shows the (abridged) results of symbolically executing GNU Coreutils' implementation of {\tt echo}. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. 
+Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and did not provide information regarding the semantic differences between the two implementations. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. \\
 
-\begin{lstlisting}[style=C, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Output of symbolically executing GNU Coreutils {\tt echo} with S$^2$E}]
-PUT A LISTING HERE WITH THE OUTPUT OF EXECUTING S2E DIRECTLY ON THE ECHO BINARY
+Listing \ref{s2e-binary} shows the command used to execute the binary of GNU Coreutils' {\tt echo}. In order to symbolically execute the binary we must pre-load the {\tt init\_env} library (line 1) which intercepts the programs entry point invocation, parses the command line program arguments and configures symbolic execution before invoking {\tt echo}'s main method. We also have to specify some options for our symbolic execution (line 2); {\tt --select-process-code} enables forking the only in the code portion of the current binary, and {\tt --sym-args 0 2 4} generates 0-2 symbolic arguments of length 4 for {\tt echo}. Finally, we use {\tt s2ecmd kill} (line 3) to kill the execution path once {\tt echo} returns to prevent S$^2$E from running forever. \\
+
+\begin{lstlisting}[style=C, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Command for symbolically executing the GNU Coreutils {\tt echo} binary with S$^2$E}]
+LD_PRELOAD=/path/to/guest/init_env/init_env.so \
+ /bin/echo --select-process-code --sym-args 0 \
+ 2 4 ; /path/to/guest/s2ecmd/s2ecmd kill 0 \
+  "echo done"
+\end{lstlisting}
+
+\subsection{Executing the binary from within a tester program}
+
+After determining that we would need to invoke both of the implementations from within the same program to compare their semantics, we elected to use the direct approach shown in Listing \ref{s2e-popen}. Here we created a symbolic variable x (lines 1 and 2), created the command to invoke {\tt echo} using {\tt snprintf} (line 3), then enabled S$^2$E's forking (line 5) before using {\tt popen} to execute the command (line 7). We could not use {\tt execv} here because we would not have been able to read what {\tt echo} wrote to stdout since {\tt execv} forks a new process, whereas {\tt popen} creates a pipe between the program and the command, and returns a pointer to a stream that can be read from. Later in the code (line 10), we used {\tt fread} to retrieve that stream and read its contents into a buffer. Unfortunately, this technique did not work because S$^2$E was symbolically executing {\tt popen} and so the analysis took too much time, consumed too much memory, and did not yield useful results. \\
+
+\begin{lstlisting}[style=C, label=s2e-popen, abovecaptionskip=2ex, captionpos=b, caption={Code to symbolically invoke the GNU Coreutils {\tt echo} binary from a tester program}]
+FILE* pipe; char command[70]; char x[2];
+s2e_make_symbolic(&x, sizeof(x), "x"); // make x symbolic
+int len = snprintf(command, sizeof(command), "echo %s", x);
+if (len <= sizeof(command)) {
+    s2e_enable_forking();
+    pipe = popen(command, "r");
+    s2e_disable_forking();
+}
+...
+char buf[100];
+fread(buf, 1, 1024, pipe);
 \end{lstlisting}
 
 \subsection{Creating libraries for each implementation}
 
-[DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
+[DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff) - make sure you discuss why we needed a shared/static library in the first place
 
 \subsection{Redirecting stdout to a buffer}
 
-[MARIANA] Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed because busybox does not use stdio). 
+Once we had successfully managed to invoke the two implementations of {\tt echo} from our tester program we needed to retrieve the output of the programs in order to compare their semantics. As both implementations write output directly to the shell we elected to redirect {\tt stdout} using the commands in Listing \ref{s2e-redirect}. Although this worked for GNU Coreutils, the invocation of Busybox's implementation of {\tt echo} caused our buffer to be corrupted. Upon investigation, we discovered that although GNU Coreutils uses {\tt stdio}, Busybox avoids using it as the developers do not assume that {\tt stdout} is actually open (and failed writes fill up the input buffer which cannot always be flushed), so they use {\tt writev} to output the result. \\ 
 
-After all of these attempts we decided to look into how KLEE ended up doing this comparison of coreutils and busybox. We discovered that KLEE was symbolically modifying stdout (klee option {\tt -sym-stdout}). Since S2E is built upon KLEE we tried to add this flag into the klee arguments portion of the config.lua file for S2E (include listing with config file we used for our testing? or is it not relevant because testcasegeneration didn't even seem to work...), however this option did not exist, most likely due to the fact that s2e is meant to be in vivo and use a real software stack (i.e., not model any of those layers).
+\begin{lstlisting}[style=C, label=s2e-redirect, abovecaptionskip=2ex, captionpos=b, caption={Code snippet for redirecting stdout to a buffer}]
+char buf[128];
+freopen("coreutils.out", "w", stdout);
+setbuf(stdout, buf);
+\end{lstlisting}
+
+At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}). Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
 
 \subsection{Modifying the implementations to not use stdout}
 [DHAVAL] Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [SUCCESS!]
@@ -229,17 +259,23 @@ After all of these attempts we decided to look into how KLEE ended up doing this
 
 \section{Experiments}
 
-[MARIANA]
+For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox 1.22.1 (the latest versions at the time of this writing). 
 
-\begin{itemize}
-  \item modified echo to return strings for both implementations
-  \item got 4 assertions that failed between the two implementations
-  \item manually inspected the programs with gdb given the inputs provided by s2e (e.g., 0x2c02) to step through the execution and see where execution differed
-  \item We even discovered a bug in our own modifications to coreutils echo where we were adding a space instead of newline!
-  \item each time we run s2e we get a different number of states even though they should hypothetically always go through the same number of states
-  \item one example of a difference between the implementations of echo is that both echo's print a space between strings found in argv, however the condition preceding the addition of this space is different between the implementations (for coreutils) if there is at least one string to print (check argc > 0), a space is always added after the word whereas busybox only prints a space after a word if there is another string to print (breaks if *argv++ not NULL).
-  \item two input patterns that failed the asserts (1) ended with 0x00 (i.e., NULL character), and (2) ended with extended ascii values (i.e., expressed as a signed integer -0x45 which is a symbol)
-\end{itemize}
+Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the code in Listing \ref{s2e-equ}. \\
+
+\begin{lstlisting}[style=C, label=s2e-equ, abovecaptionskip=2ex, captionpos=b, caption={Program used to perform equivalence testing on GNU Coreutils and Busybox}]
+[INSERT CODE HERE]
+\end{lstlisting}
+
+Our analysis produced the results similar to those shown in listing \ref{s2e-equiv-result} which provides the constraints for that state (line XX) and also a sample test case that satisfies those constraints (line XX). Such output exists for all states including those that exit normally (i.e., do not fail the assert). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that ended with extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
+
+\begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
+[INSERT CODE HERE]
+\end{lstlisting}
+
+Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why their were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argv {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
+
+We also had a personal experience of S$^2$E finding a bug due to an implementation error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. 
 
 % ---------------------- STATUS ---------------------- %
 
