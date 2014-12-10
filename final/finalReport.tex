@@ -16,352 +16,21 @@
 %% and
 %% http://www.ieee.org/
 
-%%*************************************************************************
-%% Legal Notice:
-%% This code is offered as-is without any warranty either expressed or
-%% implied; without even the implied warranty of MERCHANTABILITY or
-%% FITNESS FOR A PARTICULAR PURPOSE!
-%% User assumes all risk.
-%% In no event shall IEEE or any contributor to this code be liable for
-%% any damages or losses, including, but not limited to, incidental,
-%% consequential, or any other damages, resulting from the use or misuse
-%% of any information contained here.
-%%
-%% All comments are the opinions of their respective authors and are not
-%% necessarily endorsed by the IEEE.
-%%
-%% This work is distributed under the LaTeX Project Public License (LPPL)
-%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
-%% distributed and modified. A copy of the LPPL, version 1.3, is included
-%% in the base LaTeX documentation of all distributions of LaTeX released
-%% 2003/12/01 or later.
-%% Retain all contribution notices and credits.
-%% ** Modified files should be clearly indicated as such, including  **
-%% ** renaming them and changing author support contact information. **
-%%
-%% File list of work: IEEEtran.cls, IEEEtran_HOWTO.pdf, bare_adv.tex,
-%%                    bare_conf.tex, bare_jrnl.tex, bare_jrnl_compsoc.tex
-%%*************************************************************************
-
-% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
-% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
-% *** with production work. IEEE's font choices can trigger bugs that do  ***
-% *** not appear when using other class files.                            ***
-% The testflow support page is at:
-% http://www.michaelshell.org/tex/testflow/
-
-
-
-% Note that the a4paper option is mainly intended so that authors in
-% countries using A4 can easily print to A4 and see how their papers will
-% look in print - the typesetting of the document will not typically be
-% affected with changes in paper size (but the bottom and side margins will).
-% Use the testflow package mentioned above to verify correct handling of
-% both paper sizes by the user's LaTeX system.
-%
-% Also note that the "draftcls" or "draftclsnofoot", not "draft", option
-% should be used if it is desired that the figures are to be displayed in
-% draft mode.
-%
 \documentclass[conference]{IEEEtran}
-% Add the compsoc option for Computer Society conferences.
-%
-% If IEEEtran.cls has not been installed into the LaTeX system files,
-% manually specify the path to it like:
-% \documentclass[conference]{../sty/IEEEtran}
-
-
-
-
-
-% Some very useful LaTeX packages include:
-% (uncomment the ones you want to load)
-
-
-% *** MISC UTILITY PACKAGES ***
-%
-%\usepackage{ifpdf}
-% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
-% compilation based on whether the output is pdf or dvi.
-% usage:
-% \ifpdf
-%   % pdf code
-% \else
-%   % dvi code
-% \fi
-% The latest version of ifpdf.sty can be obtained from:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
-% Also, note that IEEEtran.cls V1.7 and later provides a builtin
-% \ifCLASSINFOpdf conditional that works the same way.
-% When switching from latex to pdflatex and vice-versa, the compiler may
-% have to be run twice to clear warning/error messages.
-
-
-
-
-
-
-% *** CITATION PACKAGES ***
-%
-%\usepackage{cite}
-% cite.sty was written by Donald Arseneau
-% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
-% \cite{} output to follow that of IEEE. Loading the cite package will
-% result in citation numbers being automatically sorted and properly
-% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
-% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
-% \cite will automatically add leading space, if needed. Use cite.sty's
-% noadjust option (cite.sty V3.8 and later) if you want to turn this off.
-% cite.sty is already installed on most LaTeX systems. Be sure and use
-% version 4.0 (2003-05-27) and later if using hyperref.sty. cite.sty does
-% not currently provide for hyperlinked citations.
-% The latest version can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
-% The documentation is contained in the cite.sty file itself.
-
-
-
-
-
-
-% *** GRAPHICS RELATED PACKAGES ***
-%
-\ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../pdf/}{../jpeg/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
-\else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
-  % will default to the driver specified in the system graphics.cfg if no
-  % driver is specified.
-  % \usepackage[dvips]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
-\fi
-% graphicx was written by David Carlisle and Sebastian Rahtz. It is
-% required if you want graphics, photos, etc. graphicx.sty is already
-% installed on most LaTeX systems. The latest version and documentation can
-% be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/required/graphics/
-% Another good source of documentation is "Using Imported Graphics in
-% LaTeX2e" by Keith Reckdahl which can be found as epslatex.ps or
-% epslatex.pdf at: http://www.ctan.org/tex-archive/info/
-%
-% latex, and pdflatex in dvi mode, support graphics in encapsulated
-% postscript (.eps) format. pdflatex in pdf mode supports graphics
-% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
-% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
-% not a bitmapped formats (.jpeg, .png). IEEE frowns on bitmapped formats
-% which can result in "jaggedy"/blurry rendering of lines and letters as
-% well as large increases in file sizes.
-%
-% You can find documentation about the pdfTeX application at:
-% http://www.tug.org/applications/pdftex
-
-
-
-
-
-% *** MATH PACKAGES ***
-%
-%\usepackage[cmex10]{amsmath}
-% A popular package from the American Mathematical Society that provides
-% many useful and powerful commands for dealing with mathematics. If using
-% it, be sure to load this package with the cmex10 option to ensure that
-% only type 1 fonts will utilized at all point sizes. Without this option,
-% it is possible that some math symbols, particularly those within
-% footnotes, will be rendered in bitmap form which will result in a
-% document that can not be IEEE Xplore compliant!
-%
-% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
-% thus preventing page breaks from occurring within multiline equations. Use:
-%\interdisplaylinepenalty=2500
-% after loading amsmath to restore such page breaks as IEEEtran.cls normally
-% does. amsmath.sty is already installed on most LaTeX systems. The latest
-% version and documentation can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/required/amslatex/math/
-
-
-
-
-
-% *** SPECIALIZED LIST PACKAGES ***
-%
-%\usepackage{algorithmic}
-% algorithmic.sty was written by Peter Williams and Rogerio Brito.
-% This package provides an algorithmic environment fo describing algorithms.
-% You can use the algorithmic environment in-text or within a figure
-% environment to provide for a floating algorithm. Do NOT use the algorithm
-% floating environment provided by algorithm.sty (by the same authors) or
-% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
-% algorithm float types and packages that provide these will not provide
-% correct IEEE style captions. The latest version and documentation of
-% algorithmic.sty can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithms/
-% There is also a support site at:
-% http://algorithms.berlios.de/index.html
-% Also of interest may be the (relatively newer and more customizable)
-% algorithmicx.sty package by Szasz Janos:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/
-
-
-
-
-% *** ALIGNMENT PACKAGES ***
-%
-%\usepackage{array}
-% Frank Mittelbach's and David Carlisle's array.sty patches and improves
-% the standard LaTeX2e array and tabular environments to provide better
-% appearance and additional user controls. As the default LaTeX2e table
-% generation code is lacking to the point of almost being broken with
-% respect to the quality of the end results, all users are strongly
-% advised to use an enhanced (at the very least that provided by array.sty)
-% set of table tools. array.sty is already installed on most systems. The
-% latest version and documentation can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/required/tools/
-
-
-%\usepackage{mdwmath}
-%\usepackage{mdwtab}
-% Also highly recommended is Mark Wooding's extremely powerful MDW tools,
-% especially mdwmath.sty and mdwtab.sty which are used to format equations
-% and tables, respectively. The MDWtools set is already installed on most
-% LaTeX systems. The lastest version and documentation is available at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/mdwtools/
-
-
-% IEEEtran contains the IEEEeqnarray family of commands that can be used to
-% generate multiline equations as well as matrices, tables, etc., of high
-% quality.
-
-
-%\usepackage{eqparbox}
-% Also of notable interest is Scott Pakin's eqparbox package for creating
-% (automatically sized) equal width boxes - aka "natural width parboxes".
-% Available at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/eqparbox/
-
-
-
-
-
-% *** SUBFIGURE PACKAGES ***
-%\usepackage[tight,footnotesize]{subfigure}
-% subfigure.sty was written by Steven Douglas Cochran. This package makes it
-% easy to put subfigures in your figures. e.g., "Figure 1a and 1b". For IEEE
-% work, it is a good idea to load it with the tight package option to reduce
-% the amount of white space around the subfigures. subfigure.sty is already
-% installed on most LaTeX systems. The latest version and documentation can
-% be obtained at:
-% http://www.ctan.org/tex-archive/obsolete/macros/latex/contrib/subfigure/
-% subfigure.sty has been superceeded by subfig.sty.
-
-
-
-%\usepackage[caption=false]{caption}
-%\usepackage[font=footnotesize]{subfig}
-% subfig.sty, also written by Steven Douglas Cochran, is the modern
-% replacement for subfigure.sty. However, subfig.sty requires and
-% automatically loads Axel Sommerfeldt's caption.sty which will override
-% IEEEtran.cls handling of captions and this will result in nonIEEE style
-% figure/table captions. To prevent this problem, be sure and preload
-% caption.sty with its "caption=false" package option. This is will preserve
-% IEEEtran.cls handing of captions. Version 1.3 (2005/06/28) and later
-% (recommended due to many improvements over 1.2) of subfig.sty supports
-% the caption=false option directly:
-%\usepackage[caption=false,font=footnotesize]{subfig}
-%
-% The latest version and documentation can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/subfig/
-% The latest version and documentation of caption.sty can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/caption/
-
-
-
-
-% *** FLOAT PACKAGES ***
-%
-%\usepackage{fixltx2e}
-% fixltx2e, the successor to the earlier fix2col.sty, was written by
-% Frank Mittelbach and David Carlisle. This package corrects a few problems
-% in the LaTeX2e kernel, the most notable of which is that in current
-% LaTeX2e releases, the ordering of single and double column floats is not
-% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
-% single column figure to be placed prior to an earlier double column
-% figure. The latest version and documentation can be found at:
-% http://www.ctan.org/tex-archive/macros/latex/base/
-
-
-
-%\usepackage{stfloats}
-% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
-% the ability to do double column floats at the bottom of the page as well
-% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
-% LaTeX2e). It also provides a command:
-%\fnbelowfloat
-% to enable the placement of footnotes below bottom floats (the standard
-% LaTeX2e kernel puts them above bottom floats). This is an invasive package
-% which rewrites many portions of the LaTeX2e float routines. It may not work
-% with other packages that modify the LaTeX2e float routines. The latest
-% version and documentation can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/sttools/
-% Documentation is contained in the stfloats.sty comments as well as in the
-% presfull.pdf file. Do not use the stfloats baselinefloat ability as IEEE
-% does not allow \baselineskip to stretch. Authors submitting work to the
-% IEEE should note that IEEE rarely uses double column equations and
-% that authors should try to avoid such use. Do not be tempted to use the
-% cuted.sty or midfloat.sty packages (also by Sigitas Tolusis) as IEEE does
-% not format its papers in such ways.
-
-
-
-
-
-% *** PDF, URL AND HYPERLINK PACKAGES ***
-%
-%\usepackage{url}
-% url.sty was written by Donald Arseneau. It provides better support for
-% handling and breaking URLs. url.sty is already installed on most LaTeX
-% systems. The latest version can be obtained at:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/misc/
-% Read the url.sty source comments for usage information. Basically,
-% \url{my_url_here}.
-
-
-
-
-
-% *** Do not adjust lengths that control margins, column widths, etc. ***
-% *** Do not use packages that alter fonts (such as pslatex).         ***
-% There should be no need to do such things with IEEEtran.cls V1.6 and later.
-% (Unless specifically asked to do so by the journal or conference you plan
-% to submit to, of course. )
-
 
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{color}
 \usepackage{listings}
-
-% correct bad hyphenation here
-\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{ipa}
 
 \begin{document}
-%
-% paper title
-% can use linebreaks \\ within to get better formatting as desired
+
+% ---------------------- TITLE ---------------------- %
+
 \title{Comparing Application Semantics with S$^2$E \\ {\large Determining whether busybox and coreutils are actually the same}}
 % or \title{Symbolically Executing Real Applications \\ {\large Trying to make S$^2$E work with real software}}
 
-% author names and affiliations
-% use a multiple column layout for up to three different
-% affiliations
 \author{\IEEEauthorblockN{Mariana D'Angelo}
 \IEEEauthorblockA{Department of Electrical and Computer Engineering\\
 University of Toronto\\
@@ -374,21 +43,9 @@ University of Toronto\\
 Toronto, Canada\\
 dhaval.miyani@utoronto.ca}}
 
-% use for special paper notices
-%\IEEEspecialpapernotice{(Invited Paper)}
-
-% make the title area
 \maketitle
 
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-\IEEEpeerreviewmaketitle
+% ---------------------- INTRODUCTION ---------------------- %
 
 \section{Introduction}
 
@@ -438,102 +95,20 @@ approaches we tried will be thoroughly discussed in the Experiments section of t
 paper along with our own explanations about why they failed or succeeded and
 what impact these choices had on the program analysis as a whole.
 
-%\subsection{Subsection Heading Here}
-%Subsection text here.
+This paper is organized as follows: Section II presents some background regarding
+symbolic execution, Section III discusses our approach to the experiments, Section IV 
+describes in detail how we attempted to implement our approach, Section V discusses 
+the results of our successful experiment with echo, Section VI presents the status 
+of our implementation, Section VII concludes with some lessons learned, and finally in
+Section VIII we discuss future work. 
 
-
-%\subsubsection{Subsubsection Heading Here}
-%Subsubsection text here.
-
-
-% An example of a floating figure using the graphicx package.
-% Note that \label must occur AFTER (or within) \caption.
-% For figures, \caption should occur after the \includegraphics.
-% Note that IEEEtran v1.7 and later has special internal code that
-% is designed to preserve the operation of \label within \caption
-% even when the captionsoff option is in effect. However, because
-% of issues like this, it may be the safest practice to put all your
-% \label just after \caption rather than within \caption{}.
-%
-% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
-% option should be used if it is desired that the figures are to be
-% displayed while in draft mode.
-%
-%\begin{figure}[!t]
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex,
-% and a .pdf suffix will be assumed for pdflatex; or what has been declared
-% via \DeclareGraphicsExtensions.
-%\caption{Simulation Results}
-%\label{fig_sim}
-%\end{figure}
-
-% Note that IEEE typically puts floats only at the top, even when this
-% results in a large percentage of a column being occupied by floats.
-
-
-% An example of a double column floating figure using two subfigures.
-% (The subfig.sty package must be loaded for this to work.)
-% The subfigure \label commands are set within each subfloat command, the
-% \label for the overall figure must come after \caption.
-% \hfil must be used as a separator to get equal spacing.
-% The subfigure.sty package works much the same way, except \subfigure is
-% used instead of \subfloat.
-%
-%\begin{figure*}[!t]
-%\centerline{\subfloat[Case I]\includegraphics[width=2.5in]{subfigcase1}%
-%\label{fig_first_case}}
-%\hfil
-%\subfloat[Case II]{\includegraphics[width=2.5in]{subfigcase2}%
-%\label{fig_second_case}}}
-%\caption{Simulation results}
-%\label{fig_sim}
-%\end{figure*}
-%
-% Note that often IEEE papers with subfigures do not employ subfigure
-% captions (using the optional argument to \subfloat), but instead will
-% reference/describe all of them (a), (b), etc., within the main caption.
-
-
-% An example of a floating table. Note that, for IEEE style tables, the
-% \caption command should come BEFORE the table. Table text will default to
-% \footnotesize as IEEE normally uses this smaller font for tables.
-% The \label must come after \caption as always.
-%
-%\begin{table}[!t]
-%% increase table row spacing, adjust to taste
-%\renewcommand{\arraystretch}{1.3}
-% if using array.sty, it might be a good idea to tweak the value of
-% \extrarowheight as needed to properly center the text within the cells
-%\caption{An Example of a Table}
-%\label{table_example}
-%\centering
-%% Some packages, such as MDW tools, offer better commands for making tables
-%% than the plain LaTeX2e tabular which is used here.
-%\begin{tabular}{|c||c|}
-%\hline
-%One & Two\\
-%\hline
-%Three & Four\\
-%\hline
-%\end{tabular}
-%\end{table}
-
-
-% Note that IEEE does not put floats in the very first column - or typically
-% anywhere on the first page for that matter. Also, in-text middle ("here")
-% positioning is not used. Most IEEE journals/conferences use top floats
-% exclusively. Note that, LaTeX2e, unlike IEEE journals/conferences, places
-% footnotes above bottom floats. This can be corrected via the \fnbelowfloat
-% command of the stfloats package.
-
+% ---------------------- BACKGROUND ---------------------- %
 
 \section{Background}
 
 There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, Listing \ref{code-fuzzing} shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution.
 
-%  --------------------- CODE SYNTAX HIGHLIGHTING --------------------- %
+%  ------ CODE SYNTAX HIGHLIGHTING ------ %
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{myblue}{rgb}{0,0,0.6}
@@ -586,7 +161,7 @@ Unit is symbolically executed while the
 environment is executed concretely.
 \item \textit{Strictly Consistent System-level Execution
 (SC-SE):} Unit and environment are executed
-symbolically - this is the only model that
+symbolically - this is the only model that
 executes the environment symbolically.
 \item \textit{Local Consistency (LC):} Similar to SC-UE,
 but it adheres to constraints that the
@@ -612,99 +187,132 @@ Static analysis is performed without executing the program in question and has k
 \label{s2e-cm}
 \end{figure}
 
+% ---------------------- APPROACH ---------------------- %
+
 \section{Approach}
 
-Details of the research methodology or approach taken in the project.
+The high level approach we took to use S2E for equivalence testing was as follows:
 
-In theory:
-\begin{itemize}
-    \item Run each program with a symbolic input
-    \item Compare the output of the two programs with s2e\_assert (which gives more information than a regular assert)
-    \item Analyze any differences to identify semantic differences between implementations (e.g., corner cases where they each handle an error differently)
-\end{itemize}
+\begin{enumerate}
+  \item Run each program with symbolic input (using {\tt s2e\_make\_symbolic()} from a test application invoking the functions or directly on the binary with option {\tt --sym-args}).
+  \item Compare the output of the Busybox and GNU Coreutils implementation of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S2E and generates sample input which violates the assertion.
+  \item Using the sample input generated, manually analyze the two implementations (possibly using GNU Debugger) to identify semantic differences between the two implementations. 
+\end{enumerate}
 
-\section{Status}
+% ---------------------- IMPLEMENTATION ---------------------- %
 
-Current status of implementation.
+\section{Implementation}
 
-\begin{itemize}
-	\item It isn't actually working since our lives are awful.
-	\item The world is a terrible place.
-\end{itemize}
+In this section we will describe all of the ways in which we tried to symbolically execute the two binaries (from GNU Coreutils and Busybox) to perform equivalence testing. 
+
+\subsection{Running the binary directly}
+
+Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and did not provide information regarding the semantic differences between the two implementations. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. \\
+
+Listing \ref{s2e-binary} shows the command used to execute the binary of GNU Coreutils' {\tt echo}. In order to symbolically execute the binary we must pre-load the {\tt init\_env} library (line 1) which intercepts the programs entry point invocation, parses the command line program arguments and configures symbolic execution before invoking {\tt echo}'s main method. We also have to specify some options for our symbolic execution (line 2); {\tt --select-process-code} enables forking the only in the code portion of the current binary, and {\tt --sym-args 0 2 4} generates 0-2 symbolic arguments of length 4 for {\tt echo}. Finally, we use {\tt s2ecmd kill} (line 3) to kill the execution path once {\tt echo} returns to prevent S$^2$E from running forever. \\
+
+\begin{lstlisting}[style=C, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Command for symbolically executing the GNU Coreutils {\tt echo} binary with S$^2$E}]
+LD_PRELOAD=/path/to/guest/init_env/init_env.so \
+ /bin/echo --select-process-code --sym-args 0 \
+ 2 4 ; /path/to/guest/s2ecmd/s2ecmd kill 0 \
+  "echo done"
+\end{lstlisting}
+
+\subsection{Executing the binary from within a tester program}
+
+After determining that we would need to invoke both of the implementations from within the same program to compare their semantics, we elected to use the direct approach shown in Listing \ref{s2e-popen}. Here we created a symbolic variable x (lines 1 and 2), created the command to invoke {\tt echo} using {\tt snprintf} (line 3), then enabled S$^2$E's forking (line 5) before using {\tt popen} to execute the command (line 7). We could not use {\tt execv} here because we would not have been able to read what {\tt echo} wrote to stdout since {\tt execv} forks a new process, whereas {\tt popen} creates a pipe between the program and the command, and returns a pointer to a stream that can be read from. Later in the code (line 10), we used {\tt fread} to retrieve that stream and read its contents into a buffer. Unfortunately, this technique did not work because S$^2$E was symbolically executing {\tt popen} and so the analysis took too much time, consumed too much memory, and did not yield useful results. \\
+
+\begin{lstlisting}[style=C, label=s2e-popen, abovecaptionskip=2ex, captionpos=b, caption={Code to symbolically invoke the GNU Coreutils {\tt echo} binary from a tester program}]
+FILE* pipe; char command[70]; char x[2];
+s2e_make_symbolic(&x, sizeof(x), "x"); // make x symbolic
+int len = snprintf(command, sizeof(command), "echo %s", x);
+if (len <= sizeof(command)) {
+    s2e_enable_forking();
+    pipe = popen(command, "r");
+    s2e_disable_forking();
+}
+...
+char buf[100];
+fread(buf, 1, 1024, pipe);
+\end{lstlisting}
+
+\subsection{Creating libraries for each implementation}
+
+[DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff) - make sure you discuss why we needed a shared/static library in the first place
+
+\subsection{Redirecting stdout to a buffer}
+
+Once we had successfully managed to invoke the two implementations of {\tt echo} from our tester program we needed to retrieve the output of the programs in order to compare their semantics. As both implementations write output directly to the shell we elected to redirect {\tt stdout} using the commands in Listing \ref{s2e-redirect}. Although this worked for GNU Coreutils, the invocation of Busybox's implementation of {\tt echo} caused our buffer to be corrupted. Upon investigation, we discovered that although GNU Coreutils uses {\tt stdio}, Busybox avoids using it as the developers do not assume that {\tt stdout} is actually open (and failed writes fill up the input buffer which cannot always be flushed), so they use {\tt writev} to output the result. \\ 
+
+\begin{lstlisting}[style=C, label=s2e-redirect, abovecaptionskip=2ex, captionpos=b, caption={Code snippet for redirecting stdout to a buffer}]
+char buf[128];
+freopen("coreutils.out", "w", stdout);
+setbuf(stdout, buf);
+\end{lstlisting}
+
+At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}). Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
+
+\subsection{Modifying the implementations to not use stdout}
+[DHAVAL] Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [SUCCESS!]
+
+% ---------------------- EXPERIMENTS ---------------------- %
 
 \section{Experiments}
 
-Results of experiments that were performed.
+For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox 1.22.1 (the latest versions at the time of this writing). 
 
-CODE SNIPPETS MIGHT MAKE THIS LONGER - ONE PER APPROACH TO SHOW WHAT WE DID.\\
-Also explanations of why things didn't work can be long and stuff.
+Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the code in Listing \ref{s2e-equ}. \\
+
+\begin{lstlisting}[style=C, label=s2e-equ, abovecaptionskip=2ex, captionpos=b, caption={Program used to perform equivalence testing on GNU Coreutils and Busybox}]
+[INSERT CODE HERE]
+\end{lstlisting}
+
+Our analysis produced the results similar to those shown in listing \ref{s2e-equiv-result} which provides the constraints for that state (line XX) and also a sample test case that satisfies those constraints (line XX). Such output exists for all states including those that exit normally (i.e., do not fail the assert). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that ended with extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
+
+\begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
+[INSERT CODE HERE]
+\end{lstlisting}
+
+Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why their were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argv {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
+
+We also had a personal experience of S$^2$E finding a bug due to an implementation error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. 
+
+% ---------------------- STATUS ---------------------- %
+
+\section{Status}
+
+[DHAVAL] Current status of implementation.
 
 \begin{itemize}
-    \item Tried running the analysis directly on a binary (no tester program invoking the program), but could not use this to compare two programs since we weren't certain the inputs would be the same (although is this really true with symbolic execution? I HAVE NO IDEA)
-    \item Tried to run the echo binaries directly using popen and fread
-    \item Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff)
-    \item Once we had these applications we tried simply redirecting stdout into a buffer to read their outputs (failed for whatever reason)
-    \item Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout...
+  \item After several failed attempts we decided to modify the utilities and got S2E working with both implementations of echo.
 \end{itemize}
+
+% ---------------------- CONCLUSION ---------------------- %
 
 \section{Conclusion}
 
-Did your results meet expectations?
+[DHAVAL] Did your results meet expectations?
 
 \begin{itemize}
-	\item Nothing worked, the world is a horrible place.
-  \item As a sort of lessons learned: lack of documentation and an incomplete understanding of how S2E symbolically executes code led to a lot of mistakes.
-  \item Also the implications of symbolic execution - do we really need to use the same symbolic input on each? If it's not concolic, does it really matter?
+	\item Summarize intro (what did we do, why did we do it)
+  \item Lessons learned: lack of documentation and an incomplete understanding of how S2E symbolically executes led to a lot of mistakes.
 \end{itemize}
 
+% ---------------------- FUTURE WORK ---------------------- %
 
-% conference papers do not normally have an appendix
+\section{Future Work}
 
+[DHAVAL]
 
-% use section* for acknowledgement
-%\section*{Acknowledgment}
+\begin{itemize}
+  \item Perform these tests on the rest of the utilities in busybox and gnu coreutils.
+  \item Try testing other programs that don't use stdout and determine if they present any different challenges.
+  \item Figure out how to change the VMM parameters for S2E (e.g., give it more memory). Discuss how even building from source had its problems as we could not transfer files from host to guest when we built S2E manually.
+\end{itemize}
 
+% ---------------------- BIBLIOGRAPHY ---------------------- %
 
-%The authors would like to thank...
-
-
-
-
-
-% trigger a \newpage just before the given reference
-% number - used to balance the columns on the last page
-% adjust value as needed - may need to be readjusted if
-% the document is modified later
-%\IEEEtriggeratref{8}
-% The "triggered" command can be changed if desired:
-%\IEEEtriggercmd{\enlargethispage{-5in}}
-
-% references section
-
-% can use a bibliography generated by BibTeX as a .bbl file
-% BibTeX documentation can be easily obtained at:
-% http://www.ctan.org/tex-archive/biblio/bibtex/contrib/doc/
-% The IEEEtran BibTeX style support page is at:
-% http://www.michaelshell.org/tex/ieeetran/bibtex/
-%\bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
-%
-% <OR> manually copy in the resultant .bbl file
-% set second argument of \begin to the number of references
-% (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
-
-%\bibitem{s2e}
-%V.~Chipounov, V.~Georgescu, C.~Zamfir, and G.~Candea.
-%\emph{Selective symbolic execution}. In Workshop on Hot Topics
-%in Dependable Systems, 2009.
-%
-%\bibitem{klee}
-%C.~Cadar, D.~Dunbar, and D.~R. Engler, \emph{KLEE:
-%Unassisted and automatic generation of high-coverage tests
-%for complex systems programs}. In Symp. on Operating Systems
-%Design and Implementation, 2008.
 
 \bibitem{s2e}
 CHIPOUNOV, V., GEORGESCU, V., ZAMFIR, C., AND CANDEA, G
@@ -779,11 +387,7 @@ DIILLIG, I., DILLIG, T., AND ALKEN, A. Sound, complete and scalable path- sensit
 LAM, M. S., WHALEY, J., LIVSHITS, V. B., MARTIN, M. C., AVOTS, D., CARBIN, M., AND UNKEL, C. Context-sensitive program analysis as
 database queries. In Symp. on Principles of Database Systems, 2005.
 
-
 \end{thebibliography}
-
-
-
 
 % that's all folks
 \end{document}
