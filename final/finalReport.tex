@@ -237,11 +237,11 @@ Static analysis is performed without executing the program in question and has k
 
 \section{Approach}
 
-The high level approach we took to use S2E for equivalence testing was as follows:
+The high level approach we took to use S$^2$E for equivalence testing was as follows:
 
 \begin{enumerate}
   \item Run each program with symbolic input (using {\tt s2e\_make\_symbolic()} from a test application invoking the functions or directly on the binary with option {\tt --sym-args}).
-  \item Compare the output of the Busybox and GNU Coreutils implementation of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S2E and generates sample input which violates the assertion.
+  \item Compare the output of the Busybox and GNU Coreutils implementation of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S$^2$E and generates sample input which violates the assertion.
   \item Using the sample input generated, manually analyze the two implementations (possibly using GNU Debugger) to identify semantic differences between the two implementations. 
 \end{enumerate}
 
@@ -313,7 +313,7 @@ export LD_LIBRARY_PATH=/home/s2e/:$LD_LIBRARY_PATH
 gcc -o test test.c libecho.a -L. -lbusybox
 \end{lstlisting}
 
-Next, we tried to compile the tester program on the QEMU VM that S$^2$E executes on, however it failed. The major reason behind this was the fact that the libraries were compiled on the 64 bit system and the QEMU VM was 32 bit. Initially we tried to compile directly on the QEMU VM, however,  required dependencies were missing and the VM does not have internet access so we were unable to install them. We elected to install a 32 bit Debian OS, which was also used by S2E's QEMU VM,  on a VM and generated those libraries. We succeeded in getting the tester program compiled against the libraries, and were able to execute each of the {\tt echo} implementations from the tester program.
+Next, we tried to compile the tester program on the QEMU VM that S$^2$E executes on, however it failed. The major reason behind this was the fact that the libraries were compiled on the 64 bit system and the QEMU VM was 32 bit. Initially we tried to compile directly on the QEMU VM, however,  required dependencies were missing and the VM does not have internet access so we were unable to install them. We elected to install a 32 bit Debian OS, which was also used by S$^2$E's QEMU VM,  on a VM and generated those libraries. We succeeded in getting the tester program compiled against the libraries, and were able to execute each of the {\tt echo} implementations from the tester program.
 
 \subsection{Redirecting stdout to a buffer}
 
@@ -329,9 +329,9 @@ At this point we decided to simply write the result to a file (omitting lines 1 
 
 \subsection{Modifying the implementations to not use stdout}
 
-The major challenge to get S2E working with our tester program was to catch the output of each Busybox and Coreutils' {\tt echo} implementations. As discussed in the above sub-section, redirecting stdout to a buffer did not work out as expected. We thought of modifying each echo implementation to return a string to the caller function instead of outputting it to the stdout. In the case of Busybox, it already dynamically allocated a string filled with the output values. We just return this string object that contains the output value to the caller function instead of writing handling it elsewhere. In the case of coreutils' echo implementation, it does not store the output value in a specific variable. Instead, wherever necessary, it uses {\tt putc()} and {\tt fputs()} functions to send the output value (character or a string) directly to the stdout. We replaced each of these functions with {\tt strcat()} function, which captures the output value into a dynamic variable and we return this variable to the caller function. 
+The major challenge to get S$^2$E working with our tester program was to catch the output of each Busybox and Coreutils' {\tt echo} implementations. As discussed in the above sub-section, redirecting stdout to a buffer did not work out as expected. We thought of modifying each echo implementation to return a string to the caller function instead of outputting it to the stdout. In the case of Busybox, it already dynamically allocated a string filled with the output values. We just return this string object that contains the output value to the caller function instead of writing handling it elsewhere. In the case of coreutils' echo implementation, it does not store the output value in a specific variable. Instead, wherever necessary, it uses {\tt putc()} and {\tt fputs()} functions to send the output value (character or a string) directly to the stdout. We replaced each of these functions with {\tt strcat()} function, which captures the output value into a dynamic variable and we return this variable to the caller function. 
 
-This way we were able to successfully capture the output of each {\tt echo} implementation. This is an implicitly required constraint for any equivalence testing using S2E so that output of echo functions can be compared.  
+This way we were able to successfully capture the output of each {\tt echo} implementation. This is an implicitly required constraint for any equivalence testing using S$^2$E so that output of echo functions can be compared.  
 
 % ---------------------- EXPERIMENTS ---------------------- %
 
@@ -435,7 +435,7 @@ v0_x_0: 2d -45 E
 
 \section{Status}
 
-After several failed attempts, we ended up successfully performing equivalence testing on the Busybox and GNU Coreutils implementations of {\tt echo} using S$^2$E. We have successfully built our prototype tester tool and analyzed the results from S2E, as described in the Experiments section. We believe that the steps we took to perform this equivalence testing can be generalized to any GNU Coreutils/Busybox program. 
+After several failed attempts, we ended up successfully performing equivalence testing on the Busybox and GNU Coreutils implementations of {\tt echo} using S$^2$E. We have successfully built our prototype tester tool and analyzed the results from S$^2$E, as described in the Experiments section. We believe that the steps we took to perform this equivalence testing can be generalized to any GNU Coreutils/Busybox program. 
 
 % ---------------------- CONCLUSION ---------------------- %
 
