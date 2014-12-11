@@ -162,6 +162,30 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 	escapeinside={\%*}{*}
 }
 
+\lstdefinestyle{bash}{
+	language=bash,
+	xleftmargin=10pt,
+	xrightmargin=0pt,
+	basicstyle=\footnotesize\bfseries\ttfamily,
+	showspaces=false,
+	showtabs=false,
+	breaklines=true,
+	showstringspaces=false,
+	breakatwhitespace=true,
+	morekeywords={gcc, ld, ar, make},
+	commentstyle=\color{mygreen},
+	keywordstyle=\color{myblue},
+	stringstyle=\color{myred},
+	numbers=left,
+	numbersep=5pt,
+	numberstyle=\footnotesize\color{mygray},
+	tabsize=4,
+	frame=TB,
+	framesep=5pt,
+	escapeinside={\%*}{*}
+}
+
+
 \begin{lstlisting}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
 if (x == 10) {
 	// path 1
@@ -263,31 +287,33 @@ fread(buf, 1, 1024, pipe);
 
 To avoid the problem of executing the binaries from the tester program, we elected to invoke the ``echo" implementations in BusyBox and Coreutils directly. In order to do so, we started off with creating libraries for each echo implementations so that ``echo" function can be called directly within the tester program. 
 
-\textbf{BusyBox:} BusyBox supports creation of a shared library out of the box. The following steps are needed to perform to generate the shared library once you download the Busybox source code:
-\begin{itemize}
-  \item {\tt cd busybox-1.22.1} - Go to the Busybox directory that you have downloaded
-  \item {\tt make menuconfig } - Once you entered the command, you will see a graphical configuration menu, where you will have to disable static binary option and enable shared library option
-  \item {\tt make } - Compile the source codes to generate the object files and finally the shared library for busy box
-\end{itemize}  
-This shared library was used later with the tester program, to directly call the echo implementation of busybox.
+\textbf{BusyBox:} BusyBox supports creation of a shared library out of the box. Listing \ref{shared-lib} shows the two commands required - line 1 is the most important as using menuconfig you set the option for busybox to generate the shared library (and disable the generation of the static binary) using the graphical configuration menu. This shared library was used later with the tester program, to directly call the echo implementation of busybox.\\
+
+\begin{lstlisting}[style=bash, label=shared-lib, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
+make menuconfig
+make
+\end{lstlisting}
 
 \textbf{Coreutils:} Coreutils does not support creation of a library out of the box unlike Busybox; we had to manually compile echo program of Coreutils. While doing so we observed that echo.c file, which contains Coreutils implementation, was dependent on the other static libraries such as {\tt libcoreutils.a} and {\tt libver.a}. There are two criteria to compile a source file into a shared library. Namely, the dependent libraries must be compiled with  {\tt -fPIC} flag with GCC and if they are not compiled with  {\tt -fPIC} flag then the libraries should be 32 bit architecture type. Since {\tt libcoreutils.a} and {\tt libver.a} are not compiled with fPIC and they are compiled with 64 bit, we could not generate a shared library of the echo program. 
 
-The last resort was to generate a static library that can be compiled with the tester program. The following commands were used to build the static library of coreutils echo program once coreutils source files have been downloaded locally: 
-\begin{itemize}
-  \item {\tt cd coreutils-8.23} - Go to the Coreutils directory
-  \item {\tt ./configure} - Configure the flags depending on the system and OS environment
-  \item {\tt make all} - compile source files into the respective binaries. In this step, we generate the dependent libraries that are needed for the echo program
-  \item {\tt cd src}
-  \item {\tt gcc -std=gnu99 -I../lib -O2 -g -c -o echo.o echo.c}
-  \item {\tt ld -r -o tmpecho.o echo.o ../lib/libcoreutils.a libver.a} 
-  \item {\tt ar -cvq libecho.a tmpecho.o} - libecho.a is the static library of the echo program, which we will use against the tester program. 
-\end{itemize}
+Our last resort was to generate a static library that can be compiled with the tester program. Listing \ref{static-lib} shows the commands used to generate a working static library for GNU Coreutils after downloading the source code. Lines 1 and 2 are necessary as they generate some header files and dependent libraries that are required to build {\tt echo} as a standalone program. Compiling echo into an object in line 4 requires options: {\tt -g} to generate debugging symbols used by S$^2$E when using {\tt ExecutionTracers} such as the {\tt TestCaseGenerator}, {\tt -I} to include the header files generated in the previous steps, {\tt -c} to not run the linker and hence output an object file rather than a binary, and {\tt -O2} to increase the performance of the code which is useful when using symbolic execution since the execution time is a constraint. Using the linker in line 5 requires the option {\tt -r} to make the output relocatable, so it can be used as an input to a linker, rather than producing an absolute file [???]. In this step we also include all of the dependent libraries which echo requires. The archive step on line 6 requires the options {\tt -q} and {\tt -c} ({\tt -v} simply provides verbose output) in order to use quick append (which adds the files to the end of the archive without checking for replacement) [??? Is this really needed?] and create an archive, respectively. \\
 
-\textbf{Other challenges:} We performed aforementioned tasks, shared library for Busybox and static library for Coreutils' echo, on a Ubuntu 64 bit system. We successfully built the respective libraries and compiled against the tester program, {\tt test.c}, using the following command: \\\\
-	{\tt export LD\_LIBRARY\_PATH=/home/s2e/:\$LD\_LIBRARY\_PATH
-	gcc -o test test.c libecho.a -L. -lbusybox }
-	 \\\\
+\begin{lstlisting}[style=bash, label=static-lib, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
+./configure
+make all
+cd src
+gcc -std=gnu99 -I../lib -O2 -g -c -o echo.o echo.c
+ld -r -o tmpecho.o echo.o ../lib/libcoreutils.a libver.a
+ar -cvq libecho.a tmpecho.o
+\end{lstlisting}
+
+\textbf{Other challenges:} We performed aforementioned tasks, shared library for Busybox and static library for Coreutils' echo, on a Ubuntu 64 bit system. We successfully built the respective libraries and compiled against the tester program, {\tt test.c} (provided in the Experiments section for reference), using the commands in Listing \ref{equ-test}. The {\tt -l} option is used in line 2 to tell {\tt gcc} to search the library {\tt busybox} when linking. \\
+	 
+\begin{lstlisting}[style=bash, label=equ-test, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
+export LD_LIBRARY_PATH=/home/s2e/:$LD_LIBRARY_PATH
+gcc -o test test.c libecho.a -L. -lbusybox
+\end{lstlisting}
+
 Next, we tried to compiled the tester program on a QEMU emulator that S2E executes on, however, it failed. The major reason behind this was the fact that the libraries were compiled on the 64bit system and QEMU emulator was 32 bit. We installed 32bit Debian OS, which was also used by S2E's QEMU emulator, and generated those libraries. Then we were successful at getting the tester program compiled against the libraries, and we were able to execute each of the {\tt echo} implementations from the tester program.
 
 \subsection{Redirecting stdout to a buffer}
