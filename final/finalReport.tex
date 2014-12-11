@@ -261,7 +261,34 @@ fread(buf, 1, 1024, pipe);
 
 \subsection{Creating libraries for each implementation}
 
-[DHAVAL] Tried to make the echo implementations into shared libraries so they could be called directly from our test program (shared library vs. static library stuff) - make sure you discuss why we needed a shared/static library in the first place
+To avoid the problem of executing the binaries from the tester program, we elected to invoke the ``echo" implementations in BusyBox and Coreutils directly. In order to do so, we started off with creating libraries for each echo implementations so that ``echo" function can be called directly within the tester program. 
+
+\textbf{BusyBox:} BusyBox supports creation of a shared library out of the box. The following steps are needed to perform to generate the shared library once you download the Busybox source code:
+\begin{itemize}
+  \item {\tt cd busybox-1.22.1} - Go to the Busybox directory that you have downloaded
+  \item {\tt make menuconfig } - Once you entered the command, you will see a graphical configuration menu, where you will have to disable static binary option and enable shared library option
+  \item {\tt make } - Compile the source codes to generate the object files and finally the shared library for busy box
+\end{itemize}  
+This shared library was used later with the tester program, to directly call the echo implementation of busybox.
+
+\textbf{Coreutils:} Coreutils does not support creation of a library out of the box unlike Busybox; we had to manually compile echo program of Coreutils. While doing so we observed that echo.c file, which contains Coreutils implementation, was dependent on the other static libraries such as {\tt libcoreutils.a} and {\tt libver.a}. There are two criteria to compile a source file into a shared library. Namely, the dependent libraries must be compiled with  {\tt -fPIC} flag with GCC and if they are not compiled with  {\tt -fPIC} flag then the libraries should be 32 bit architecture type. Since {\tt libcoreutils.a} and {\tt libver.a} are not compiled with fPIC and they are compiled with 64 bit, we could not generate a shared library of the echo program. 
+
+The last resort was to generate a static library that can be compiled with the tester program. The following commands were used to build the static library of coreutils echo program once coreutils source files have been downloaded locally: 
+\begin{itemize}
+  \item {\tt cd coreutils-8.23} - Go to the Coreutils directory
+  \item {\tt ./configure} - Configure the flags depending on the system and OS environment
+  \item {\tt make all} - compile source files into the respective binaries. In this step, we generate the dependent libraries that are needed for the echo program
+  \item {\tt cd src}
+  \item {\tt gcc -std=gnu99 -I../lib -O2 -g -c -o echo.o echo.c}
+  \item {\tt ld -r -o tmpecho.o echo.o ../lib/libcoreutils.a libver.a} 
+  \item {\tt ar -cvq libecho.a tmpecho.o} - libecho.a is the static library of the echo program, which we will use against the tester program. 
+\end{itemize}
+
+\textbf{Other challenges:} We performed aforementioned tasks, shared library for Busybox and static library for Coreutils' echo, on a Ubuntu 64 bit system. We successfully built the respective libraries and compiled against the tester program, {\tt test.c}, using the following command: \\\\
+	{\tt export LD\_LIBRARY\_PATH=/home/s2e/:\$LD\_LIBRARY\_PATH
+	gcc -o test test.c libecho.a -L. -lbusybox }
+	 \\\\
+Next, we tried to compiled the tester program on a QEMU emulator that S2E executes on, however, it failed. The major reason behind this was the fact that the libraries were compiled on the 64bit system and QEMU emulator was 32 bit. We installed 32bit Debian OS, which was also used by S2E's QEMU emulator, and generated those libraries. Then we were successful at getting the tester program compiled against the libraries, and we were able to execute each of the {\tt echo} implementations from the tester program.
 
 \subsection{Redirecting stdout to a buffer}
 
@@ -276,7 +303,10 @@ setbuf(stdout, buf);
 At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}). Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
 
 \subsection{Modifying the implementations to not use stdout}
-[DHAVAL] Final approach: modifying coreutils echo and busybox echo to return a string instead of printing to stdout [SUCCESS!]
+
+The major challenge to get S2E working with our tester program was to catch the output of each Busybox and Coreutils' {\tt echo} implementations. As discussed in the above sub-section, redirecting stdout to a buffer did not work out as expected. We thought of modifying each echo implementation to return a string to the caller function instead of outputting it to the stdout. In the case of Busybox, it already dynamically allocated a string filled with the output values. We just return this string object that contains the output value to the caller function instead of writing handling it elsewhere. In the case of coreutils' echo implementation, it does not store the output value in a specific variable. Instead, wherever necessary, it uses {\tt putc()} and {\tt fputs()} functions to send the output value (character or a string) directly to the stdout. We replaced each of these functions with {\tt strcat()} function, which captures the output value into a dynamic variable and we return this variable to the caller function. 
+
+This way we were able to successfully capture the output of each {\tt echo} implementation. This is an implicitly required constraint for any equivalence testing using S2E so that output of echo functions can be compared.  
 
 % ---------------------- EXPERIMENTS ---------------------- %
 
@@ -380,33 +410,26 @@ v0_x_0: 2d -45 E
 
 \section{Status}
 
-[DHAVAL] Current status of implementation.
-
-\begin{itemize}
-  \item After several failed attempts we decided to modify the utilities and got S2E working with both implementations of echo.
-\end{itemize}
+After several failed attempts we had decided to modify Busybox and Coreutils's {\tt echo} implementation to compare the output of each functions for the equivalence test using S2E. We have successfully build our prototype tester tool and successfully completed analyzing the results from S2E, which is described in the results section. 
 
 % ---------------------- CONCLUSION ---------------------- %
 
 \section{Conclusion}
 
-[DHAVAL] Did your results meet expectations?
+The central focus of this experiment was to understand how a complex system such S2E can be applied to existing softwares and we wanted to document this process. To perform this experiment, we thought of comparing the semantics of two implementations of {\tt echo} program: Busybox and Coreutils. We faced challenges throughout the experiment, for instance, getting Busybox and Coreutils working with the tester program using libraries. After many unsuccessful attempts, we were successfully developed a prototype tester tool that performs an equivalence testing between the two implementations of {\tt echo} using S2E. Using this tool we found out that there are two major semantic differences between each echo implementations, using extended ASCII values and ending with a NULL character as an input. Each implementation generates different results. For example, if the input string ends with  a NULL character, Coreutils echo program will add a space and a NULL character to the output value, whereas Busybox echo program will only add a NULL. 
 
-\begin{itemize}
-	\item Summarize intro (what did we do, why did we do it)
-  \item Lessons learned: lack of documentation and an incomplete understanding of how S2E symbolically executes led to a lot of mistakes.
-\end{itemize}
+Throughout the journey of this experiment, we learned few lessons. One of the factors we prolonged the process of simply getting S2E working was due to the lack of documentation. For any small tasks, we had to perform trial and error method to successfully accomplish that particular tasks. For instance, there is no interface for transferring files between the host (Ubuntu) and the guest (QEMU) system, and there is no documentation to perform this task. We tried using {\tt scp}, {\tt ftp} and even reinstalling QEMU emulator, but nothing worked out. Eventually, we had to post a question on the developer forum to seek an assistance, which took time to get the respond. If a simple task such as this was mentioned in the documentation then we would have saved few days from wastage [TODO: Need to say in a better way]. The other lesson we learned was how an incomplete understanding of S2E's symbolic execution led to us a lot of mistakes, as we described in the implementation section. 
 
 % ---------------------- FUTURE WORK ---------------------- %
 
 \section{Future Work}
 
-[DHAVAL]
+Our methods and techniques can be used for the other future purposes described as following: 
 
 \begin{itemize}
-  \item Perform these tests on the rest of the utilities in busybox and gnu coreutils.
-  \item Try testing other programs that don't use stdout and determine if they present any different challenges.
-  \item Figure out how to change the VMM parameters for S2E (e.g., give it more memory). Discuss how even building from source had its problems as we could not transfer files from host to guest when we built S2E manually.
+  \item Perform these tests on the rest of the utilities in busybox and gnu coreutils, and determine the semantic differences between them.
+  \item Try testing other programs that don't use stdout and determine if they present any different challenges, and if so document the process to aid future developers.
+  \item The VM of QEMU used only 48 MB, and we were unable to increase the memory. So, figuring out a way to change QEMU launch parameters for S2E (e.g., give it more memory), which can boost the performance of analyzing the binaries. 
 \end{itemize}
 
 % ---------------------- BIBLIOGRAPHY ---------------------- %
