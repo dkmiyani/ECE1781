@@ -185,7 +185,6 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 	escapeinside={\%*}{*}
 }
 
-
 \begin{lstlisting}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
 if (x == 10) {
 	// path 1
@@ -314,7 +313,7 @@ export LD_LIBRARY_PATH=/home/s2e/:$LD_LIBRARY_PATH
 gcc -o test test.c libecho.a -L. -lbusybox
 \end{lstlisting}
 
-Next, we tried to compile the tester program on the QEMU VMM that S$^2$E executes on, however it failed. The major reason behind this was the fact that the libraries were compiled on the 64 bit system and the QEMU VMM was 32 bit. Initially we tried to compile directly on the QEMU VMM, however,  required dependencies were missing and the VMM does not have internet access so we were unable to install them. We elected to install 32 bit Debian OS, which was also used by S2E's QEMU VMM,  on a VM and generated those libraries. We succeeded in getting the tester program compiled against the libraries, and were able to execute each of the {\tt echo} implementations from the tester program.
+Next, we tried to compile the tester program on the QEMU VM that S$^2$E executes on, however it failed. The major reason behind this was the fact that the libraries were compiled on the 64 bit system and the QEMU VM was 32 bit. Initially we tried to compile directly on the QEMU VM, however,  required dependencies were missing and the VM does not have internet access so we were unable to install them. We elected to install a 32 bit Debian OS, which was also used by S2E's QEMU VM,  on a VM and generated those libraries. We succeeded in getting the tester program compiled against the libraries, and were able to execute each of the {\tt echo} implementations from the tester program.
 
 \subsection{Redirecting stdout to a buffer}
 
@@ -326,7 +325,7 @@ freopen("coreutils.out", "w", stdout);
 setbuf(stdout, buf);
 \end{lstlisting}
 
-At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}). Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
+At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}) \cite{klee-coreutils}. Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
 
 \subsection{Modifying the implementations to not use stdout}
 
@@ -436,26 +435,26 @@ v0_x_0: 2d -45 E
 
 \section{Status}
 
-After several failed attempts we had decided to modify Busybox and Coreutils's {\tt echo} implementation to compare the output of each functions for the equivalence test using S2E. We have successfully build our prototype tester tool and successfully completed analyzing the results from S2E, which is described in the results section. 
+After several failed attempts, we ended up successfully performing equivalence testing on the Busybox and GNU Coreutils implementations of {\tt echo} using S$^2$E. We have successfully built our prototype tester tool and analyzed the results from S2E, as described in the Experiments section. We believe that the steps we took to perform this equivalence testing can be generalized to any GNU Coreutils/Busybox program. 
 
 % ---------------------- CONCLUSION ---------------------- %
 
 \section{Conclusion}
 
-The central focus of this experiment was to understand how a complex system such S2E can be applied to existing softwares and we wanted to document this process. To perform this experiment, we thought of comparing the semantics of two implementations of {\tt echo} program: Busybox and Coreutils. We faced challenges throughout the experiment, for instance, getting Busybox and Coreutils working with the tester program using libraries. After many unsuccessful attempts, we were successfully developed a prototype tester tool that performs an equivalence testing between the two implementations of {\tt echo} using S2E. Using this tool we found out that there are two major semantic differences between each echo implementations, using extended ASCII values and ending with a NULL character as an input. Each implementation generates different results. For example, if the input string ends with  a NULL character, Coreutils echo program will add a space and a NULL character to the output value, whereas Busybox echo program will only add a NULL. 
+The central focus of this experiment was to understand how a complex system like S$^2$E can be applied to existing software and we wanted to document this process. To perform this experiment, we thought of comparing the semantics of two implementations of {\tt echo} from Busybox and GNU Coreutils. We faced challenges throughout the experiment such as invoking Busybox and GNU Coreutils from our tester program. After many unsuccessful attempts, we successfully created a program which performs equivalence testing between the two implementations of {\tt echo} using S$^2$E. We uncovered two semantic differences between each {\tt echo} implementation: the handling extended ASCII values and input ending with a {\tt NULL} character. Each implementation generates different results. For example, if the input string ends with  a {\tt NULL} character, Coreutils echo program will output a space and a newline, whereas Busybox echo program will only output a newline. \\
 
-Throughout the journey of this experiment, we learned few lessons. One of the factors we prolonged the process of simply getting S2E working was due to the lack of documentation. For any small tasks, we had to perform trial and error method to successfully accomplish that particular tasks. For instance, there is no interface for transferring files between the host (Ubuntu) and the guest (QEMU) system, and there is no documentation to perform this task. We tried using {\tt scp}, {\tt ftp} and even reinstalling QEMU emulator, but nothing worked out. Eventually, we had to post a question on the developer forum to seek an assistance, which took time to get the respond. If a simple task such as this was mentioned in the documentation then we would have saved few days from wastage [TODO: Need to say in a better way]. The other lesson we learned was how an incomplete understanding of S2E's symbolic execution led to us a lot of mistakes, as we described in the implementation section. 
+Throughout this experiment, we learned few lessons. One of the factors which prolonged the process of getting started with S$^2$E was the lack of documentation. For any small tasks, we had to use the trial and error method to successfully accomplish that particular task. For instance, there is no interface for transferring files between the host (Ubuntu) and the guest (QEMU) system, and there is no documentation to perform this task. We tried using {\tt scp}, {\tt ftp} and even compiling our own QEMU VM, but nothing worked. Eventually, we had to post a question on the developer forum to seek assistance, which took time to get a response. If a simple task such as this was mentioned in the documentation then we would have been able to dedicate more time to actually testing programs on S$^2$E. The other lesson we learned was how an incomplete understanding of S$^2$E's symbolic execution led to us a lot of mistakes, as we described in the implementation section. In particular, the lack of modelling for {\tt stdout} meant that we couldn't simply capture the output, but rather it had to be returned as a string. 
 
 % ---------------------- FUTURE WORK ---------------------- %
 
 \section{Future Work}
 
-Our methods and techniques can be used for the other future purposes described as following: 
+We would like to explore the following changes/additions to our current methodology in the future: 
 
 \begin{itemize}
-  \item Perform these tests on the rest of the utilities in busybox and gnu coreutils, and determine the semantic differences between them.
-  \item Try testing other programs that don't use stdout and determine if they present any different challenges, and if so document the process to aid future developers.
-  \item The VM of QEMU used only 48 MB, and we were unable to increase the memory. So, figuring out a way to change QEMU launch parameters for S2E (e.g., give it more memory), which can boost the performance of analyzing the binaries. 
+  \item Perform these tests on the rest of the utilities in Busybox and GNU Coreutils, and determine the semantic differences between them.
+  \item Try testing other programs that don't use {\tt stdout} and determine if they present any new challenges; if so document the process to aid future users of S$^2$E.
+  \item The VM of QEMU used only 48 MB of memory, and we were unable to increase the memory (doing so led to the emulator crashing. As such, figuring out a way to change QEMU launch parameters for S$^2$E in order to give it more memory would be very important to using S$^2$ to symbolically execute larger programs.
 \end{itemize}
 
 % ---------------------- BIBLIOGRAPHY ---------------------- %
@@ -534,6 +533,10 @@ DIILLIG, I., DILLIG, T., AND ALKEN, A. Sound, complete and scalable path- sensit
 \bibitem{bddbddb}
 LAM, M. S., WHALEY, J., LIVSHITS, V. B., MARTIN, M. C., AVOTS, D., CARBIN, M., AND UNKEL, C. Context-sensitive program analysis as
 database queries. In Symp. on Principles of Database Systems, 2005.
+
+\bibitem{klee-coreutils}
+Testing Coreutils, KLEE. 2009. {\tt http://klee.github.io/
+tutorials/testing-coreutils/} (Accessed: December 2014)
 
 \end{thebibliography}
 
