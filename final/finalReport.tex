@@ -57,7 +57,7 @@ A 2011 study has shown that symbolic execution tools are beginning to
 be used increasingly in industrial practice at corporations such as Microsoft,
 NASA, IBM, and Fujitsu \cite{symb-ex-practice}. This proliferation shows the
 importance of new symbolic execution tools and the impact they will have
-on the industry as they improve.
+on the industry as they improve. \\
 
 S$^2$E is a symbolic execution platform that can operate directly on application
 binaries for analyzing the properties and behaviour of software systems. It
@@ -67,7 +67,7 @@ of these layers. It is commonly used for performance profiling, reverse engineer
 of proprietary software, and finding bugs in user-mode and kernel-mode
 binaries \cite{s2e}. S$^2$E is a complex system due to the rich features it has
 (particularly the fact that it runs inside of a VMM). This complexity, however, comes
-with the price of being difficult to start using on existing software.
+with the price of being difficult to start using on existing software. \\
 
 The goal of this experiment is to understand how a complex system such
 as S$^2$E can be applied to existing software and document the process.
@@ -76,14 +76,14 @@ need to be sanitized in some way to become amenable to dynamic analysis
 via symbolic execution. Taking inspiration from KLEE \cite{klee}, we will be
 comparing the semantics of two implementations of (supposedly) the exact
 same suite of programs: the GNU Coreutils utility suite and the Busybox
-embedded system suite.
+embedded system suite. \\
 
 Comparing the semantics of two implementations can have many real world
 applications. In the field of computer security, for example, the ability to compare
-the semantics of a software compiled from source with a pre-compiled binary
+the semantics of software compiled from source with a pre-compiled binary
 could reveal malicious or accidental backdoors. In particular, the fact that S$^2$E
-runs in a VMM would allow for it to be used to test kernel level programs such as
-file systems (or compare read and write operations different file systems).
+runs in a VM would allow for it to be used to test kernel level programs such as
+file systems (or compare the read and write operations of different file systems). \\
 
 We have encountered several challenges in using the S$^2$E platform; one
 in particular forced us to change the initial goal of our experiment (evaluating
@@ -92,23 +92,31 @@ consistency models described in \cite{s2e} are actually implemented in the
 platform. Our biggest challenge with this project was trying to modify the programs
 of interest in such a way that they could be directly comparable. The different
 approaches we tried will be thoroughly discussed in the Experiments section of this
-paper along with our own explanations about why they failed or succeeded and
-what impact these choices had on the program analysis as a whole.
+paper along with our own explanations of why they failed or succeeded and
+what impact required changes had on the program analysis as a whole. \\
 
 This paper is organized as follows: Section II presents some background regarding
 symbolic execution, Section III discusses our approach to the experiments, Section IV 
 describes in detail how we attempted to implement our approach, Section V discusses 
 the results of our successful experiment with echo, Section VI presents the status 
 of our implementation, Section VII concludes with some lessons learned, and finally in
-Section VIII we discuss future work. 
+Section VIII we discuss future work.  \\
 
 % ---------------------- BACKGROUND ---------------------- %
 
 \section{Background}
 
-There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program. For example, Listing \ref{code-fuzzing} shows a if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution.
+There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program \cite{sage}. For example, Listing \ref{code-fuzzing} shows an if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such, the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. \\
 
 %  ------ CODE SYNTAX HIGHLIGHTING ------ %
+
+\lstnewenvironment{code}[1][]%
+{
+   \noindent
+   \minipage{\linewidth} 
+   \vspace{0.5\baselineskip}
+   \lstset{basicstyle=\ttfamily\footnotesize,frame=single,#1}}
+{\endminipage}
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{myblue}{rgb}{0,0,0.6}
@@ -172,7 +180,8 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 	breaklines=true,
 	showstringspaces=false,
 	breakatwhitespace=true,
-	morekeywords={gcc, ld, ar, make},
+	morekeywords={gcc, ld, ar, make, LD_PRELOAD},
+	deletekeywords={select},
 	commentstyle=\color{mygreen},
 	keywordstyle=\color{myblue},
 	stringstyle=\color{myred},
@@ -185,19 +194,19 @@ There is much work in symbolic execution for testing \cite{klee, RWset, vul-sign
 	escapeinside={\%*}{*}
 }
 
-\begin{lstlisting}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
+\begin{code}[style=C, label=code-fuzzing, abovecaptionskip=2ex, captionpos=b, caption={Code example where fuzzing generally has poor coverage}]
 if (x == 10) {
 	// path 1
 } else {
 	// path 2
 }
-\end{lstlisting}
+\end{code}
 
- Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.).
+ Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code, a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). \\
 
- In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment.
+ In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. \\
 
-S$^2$E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S$^2$E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exist a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system.
+S$^2$E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S$^2$E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exists a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system. \\
 
 \begin{itemize}
 \item \textit{Strictly Consistent Concrete Execution (SC-CE):}
@@ -222,9 +231,9 @@ path in the unit's inter-procedural control flow graph (even
 infeasible ones).
 \end{itemize}
 
-There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort.
+There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort. \\
 
-Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}.
+Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}. \\
 
 \begin{figure}[!t]
 \centering
@@ -241,7 +250,7 @@ The high level approach we took to use S$^2$E for equivalence testing was as fol
 
 \begin{enumerate}
   \item Run each program with symbolic input (using {\tt s2e\_make\_symbolic()} from a test application invoking the functions or directly on the binary with option {\tt --sym-args}).
-  \item Compare the output of the Busybox and GNU Coreutils implementation of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S$^2$E and generates sample input which violates the assertion.
+  \item Compare the output of the Busybox and GNU Coreutils implementations of the same program using {\tt s2e\_assert}, which performs a regular assert but also does some cleaning up for S$^2$E and generates sample input which violates the assertion.
   \item Using the sample input generated, manually analyze the two implementations (possibly using GNU Debugger) to identify semantic differences between the two implementations. 
 \end{enumerate}
 
@@ -253,11 +262,11 @@ In this section we will describe all of the ways in which we tried to symbolical
 
 \subsection{Running the binary directly}
 
-Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and did not provide information regarding the semantic differences between the two implementations. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. \\
+Initially, we attempted to run the analysis directly on the binaries for the two implementations of echo - having built the two utility suites precisely as suggested by the developers. These results, however, were not easily comparable and as such did not provide information regarding the semantic differences between the two implementations. From this attempt, it was apparent that running S$^2$E directly on a binary is better suited for simply testing an application with all possible inputs and high coverage, rather than determining semantic equivalence. \\
 
-Listing \ref{s2e-binary} shows the command used to execute the binary of GNU Coreutils' {\tt echo}. In order to symbolically execute the binary we must pre-load the {\tt init\_env} library (line 1) which intercepts the programs entry point invocation, parses the command line program arguments and configures symbolic execution before invoking {\tt echo}'s main method. We also have to specify some options for our symbolic execution (line 2); {\tt --select-process-code} enables forking the only in the code portion of the current binary, and {\tt --sym-args 0 2 4} generates 0-2 symbolic arguments of length 4 for {\tt echo}. Finally, we use {\tt s2ecmd kill} (line 3) to kill the execution path once {\tt echo} returns to prevent S$^2$E from running forever. \\
+Listing \ref{s2e-binary} shows the command used to execute the binary of GNU Coreutils' {\tt echo}. In order to symbolically execute the binary we must pre-load the {\tt init\_env} library (line 1) which intercepts the programs entry point invocation, parses the command line program arguments and configures symbolic execution before invoking {\tt echo}'s main method \cite{s2e-init-env}. We also have to specify some options for our symbolic execution (line 2); {\tt --select-process-code} enables forking only in the code portion of the current binary, and {\tt --sym-args 0 2 4} generates 0-2 symbolic arguments of length 4 for {\tt echo}. Finally, we use {\tt s2ecmd kill} (line 3) to kill the execution path once {\tt echo} returns to prevent S$^2$E from running forever. \\
 
-\begin{lstlisting}[style=C, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Command for symbolically executing the GNU Coreutils {\tt echo} binary with S$^2$E}]
+\begin{lstlisting}[style=bash, label=s2e-binary, abovecaptionskip=2ex, captionpos=b, caption={Command for symbolically executing the GNU Coreutils {\tt echo} binary with S$^2$E}]
 LD_PRELOAD=/path/to/guest/init_env/init_env.so \
  /bin/echo --select-process-code --sym-args 0 \
  2 4 ; /path/to/guest/s2ecmd/s2ecmd kill 0 \
@@ -266,7 +275,7 @@ LD_PRELOAD=/path/to/guest/init_env/init_env.so \
 
 \subsection{Executing the binary from within a tester program}
 
-After determining that we would need to invoke both of the implementations from within the same program to compare their semantics, we elected to use the direct approach shown in Listing \ref{s2e-popen}. Here we created a symbolic variable x (lines 1 and 2), created the command to invoke {\tt echo} using {\tt snprintf} (line 3), then enabled S$^2$E's forking (line 5) before using {\tt popen} to execute the command (line 7). We could not use {\tt execv} here because we would not have been able to read what {\tt echo} wrote to stdout since {\tt execv} forks a new process, whereas {\tt popen} creates a pipe between the program and the command, and returns a pointer to a stream that can be read from. Later in the code (line 10), we used {\tt fread} to retrieve that stream and read its contents into a buffer. Unfortunately, this technique did not work because S$^2$E was symbolically executing {\tt popen} and so the analysis took too much time, consumed too much memory, and did not yield useful results. \\
+After determining that we would need to invoke both of the implementations from within the same program to compare their semantics, we elected to use the direct approach shown in Listing \ref{s2e-popen}. Here we created a symbolic variable x (lines 1 and 2), created the command to invoke {\tt echo} using {\tt snprintf} (line 3), then enabled S$^2$E's forking (line 5) before using {\tt popen} to execute the command (line 7). We could not use {\tt execv} here because we would not have been able to read what {\tt echo} outputted since {\tt execv} forks a new process, whereas {\tt popen} creates a pipe between the program and the command, and returns a pointer to a stream that can be read from. Later in the code (line 10), we used {\tt fread} to retrieve that stream and read its contents into a buffer. Unfortunately, this technique did not work because S$^2$E was symbolically executing {\tt popen} and so the analysis took too much time, consumed too much memory, and did not yield useful results. \\
 
 \begin{lstlisting}[style=C, label=s2e-popen, abovecaptionskip=2ex, captionpos=b, caption={Code to symbolically invoke the GNU Coreutils {\tt echo} binary from a tester program}]
 FILE* pipe; char command[70]; char x[2];
@@ -284,18 +293,18 @@ fread(buf, 1, 1024, pipe);
 
 \subsection{Creating libraries for each implementation}
 
-To avoid the problem of executing the binaries from the tester program, we elected to invoke the {\tt echo} implementations from BusyBox and GNU Coreutils directly. In order to do so, we started off with creating libraries for each implementation so that {\tt echo} function can be called directly within the tester program. 
+To avoid the problem of executing the binaries from the tester program, we elected to invoke the {\tt echo} implementations from BusyBox and GNU Coreutils directly. In order to do so, we started off with creating libraries for each implementation so that the {\tt echo} function could be called directly from the tester program. 
 
-\textbf{BusyBox:} BusyBox supports creation of a shared library out of the box. Listing \ref{shared-lib} shows the two commands required - line 1 is the most important as using {\tt menuconfig} you set the option for Busybox to generate the shared library (and disable the generation of the static binary) using the graphical configuration menu. This shared library was used later with the tester program, to directly call the {\tt echo} implementation from Busybox. \\
+\textbf{BusyBox:} BusyBox supports creation of a shared library out of the box. Listing \ref{shared-lib} shows the two commands required - line 1 is the most important as you set the option for Busybox to generate the shared library (and disable the generation of the static binary) using the graphical configuration menu. This shared library was used later with the tester program, to directly call the {\tt echo} implementation from Busybox. \\
 
 \begin{lstlisting}[style=bash, label=shared-lib, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
 make menuconfig
 make
 \end{lstlisting}
 
-\textbf{GNU Coreutils:} GNU Coreutils does not support the creation of a shared library out of the box like Busybox so we had to manually compile {\tt echo} implementation from GNU Coreutils into a library. While doing so we observed that {\tt echo.c} was dependent on some other static libraries such as {\tt libcoreutils.a} and {\tt libver.a}. There are two criteria to compile a source file into a shared library: the dependent libraries must be compiled with  {\tt -fPIC} flag from {\tt gcc} and if they are not, then the libraries should be for 32 bit architecture (due a limitation of {\tt gcc}). Since {\tt libcoreutils.a} and {\tt libver.a} are not compiled with fPIC and they are compiled as 64 bit programs, we could not generate a shared library of the echo program. 
+\textbf{GNU Coreutils:} GNU Coreutils does not support the creation of a shared library out of the box (as Busybox does) so we had to manually compile the {\tt echo} implementation from GNU Coreutils into a library. While doing so we observed that {\tt echo.c} was dependent on some other static libraries such as {\tt libcoreutils.a} and {\tt libver.a}. There are two criteria to compile a source file into a shared library: the dependent libraries must be compiled with the {\tt -fPIC} flag from {\tt gcc} and, if they are not, then the libraries should be for 32 bit architectures (due a limitation of {\tt gcc}). Since {\tt libcoreutils.a} and {\tt libver.a} are not compiled with {\tt -fPIC} and are compiled as 64 bit programs, we could not generate a shared library of the echo program. 
 
-Our next approach was to generate a static library that could be compiled with the tester program. Listing \ref{static-lib} shows the commands used to generate a working static library for GNU Coreutils after downloading the source code. Lines 1 and 2 are necessary as they generate some header files and dependent libraries that are required to build {\tt echo} as a standalone program. Compiling echo into an object in line 4 requires options: {\tt -g} to generate debugging symbols used by S$^2$E when using {\tt ExecutionTracers} such as the {\tt TestCaseGenerator}, {\tt -I} to include the header files generated in the previous steps, {\tt -c} to not run the linker and hence output an object file rather than a binary, and {\tt -O2} to increase the performance of the code which is useful when using symbolic execution since the execution time is a constraint. Using the linker in line 5 requires the option {\tt -r} to merge multiple object files and static libraries into one object file. In this step we also included all of the dependent libraries which echo requires. The archive step on line 6 requires the options {\tt -q} and {\tt -c} ({\tt -v} simply provides verbose output) in order to use quick append (which adds the files to the end of the archive without checking for replacement) to speed up the operation and create an archive, respectively. \\
+Our next approach was to generate a static library that could be compiled with the tester program. Listing \ref{static-lib} shows the commands used to generate a working static library for GNU Coreutils after downloading the source code. Lines 1 and 2 are necessary as they generate some header files and dependent libraries that are required to build {\tt echo} as a standalone program. Compiling echo into an object in line 4 requires options: {\tt -g} to generate debugging symbols used by S$^2$E when using {\tt ExecutionTracers} such as the {\tt TestCaseGenerator}, {\tt -I} to include the header files generated in the previous steps, {\tt -c} to not run the linker and hence output an object file rather than a binary, and {\tt -O2} to increase the performance of the code which is useful when using symbolic execution as the execution time is a constraint. Using the linker in line 5 requires the option {\tt -r} to merge multiple object files and static libraries into one object file. In this step we also included all of the dependent libraries which {\tt echo} requires. The archive step on line 6 requires the options {\tt -q} and {\tt -c} in order to use quick append (which adds the files to the end of the archive without checking for replacement) to speed up the operation and create an archive, respectively. \\
 
 \begin{lstlisting}[style=bash, label=static-lib, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
 ./configure
@@ -303,21 +312,21 @@ make all
 cd src
 gcc -std=gnu99 -I../lib -O2 -g -c -o echo.o echo.c
 ld -r -o tmpecho.o echo.o ../lib/libcoreutils.a libver.a
-ar -cvq libecho.a tmpecho.o
+ar -cq libecho.a tmpecho.o
 \end{lstlisting}
 
-\textbf{Other challenges:} We performed aforementioned tasks, creating a shared library for Busybox and a static library for GNU Coreutils' {\tt echo}, on a 64 bit Ubuntu install. We successfully built the respective libraries and compiled them with the tester program, {\tt test.c} (provided in the Experiments section for reference), using the commands in Listing \ref{equ-test}. The {\tt -l} option is used in line 2 to tell {\tt gcc} to search the library {\tt busybox} when linking. \\
+\textbf{Using the shared libraries:} We performed the aforementioned tasks, creating a shared library for Busybox and a static library for GNU Coreutils on a 64 bit Ubuntu install. We successfully built the respective libraries and compiled them with the tester program, {\tt test.c} (provided in the Experiments section for reference), using the commands in Listing \ref{equ-test}. The {\tt -l} option is used in line 2 to tell {\tt gcc} to search the library {\tt busybox} when linking. \\
 	 
 \begin{lstlisting}[style=bash, label=equ-test, abovecaptionskip=2ex, captionpos=b, caption={Commands for building GNU Coreutils as a static library}]
 export LD_LIBRARY_PATH=/home/s2e/:$LD_LIBRARY_PATH
 gcc -o test test.c libecho.a -L. -lbusybox
 \end{lstlisting}
 
-Next, we tried to compile the tester program on the QEMU VM that S$^2$E executes on, however it failed. The major reason behind this was the fact that the libraries were compiled on the 64 bit system and the QEMU VM was 32 bit. Initially we tried to compile directly on the QEMU VM, however,  required dependencies were missing and the VM does not have internet access so we were unable to install them. We elected to install a 32 bit Debian OS, which was also used by S$^2$E's QEMU VM,  on a VM and generated those libraries. We succeeded in getting the tester program compiled against the libraries, and were able to execute each of the {\tt echo} implementations from the tester program.
+\textbf{Other challenges:} Next, we tried to compile the tester program on the QEMU VM that S$^2$E executes on, however it failed. This was due to the fact that the libraries were compiled on the 64 bit system and the QEMU VM was 32 bit. Initially we tried to compile directly on the QEMU VM, however,  required dependencies were missing and the VM does not have internet access so we were unable to install them. We elected to install a 32 bit Debian OS in a separate virtual machine and generated the libraries there. We then succeeded in getting the tester program compiled with the libraries, and were able to execute each of the {\tt echo} implementations from the tester program on the QEMU VM.
 
 \subsection{Redirecting stdout to a buffer}
 
-Once we had successfully managed to invoke the two implementations of {\tt echo} from our tester program we needed to retrieve the output of the programs in order to compare their semantics. As both implementations write output directly to the shell we elected to redirect {\tt stdout} using the commands in Listing \ref{s2e-redirect}. Although this worked for GNU Coreutils, the invocation of Busybox's implementation of {\tt echo} caused our buffer to be corrupted. Upon investigation, we discovered that although GNU Coreutils uses {\tt stdio}, Busybox avoids using it as the developers do not assume that {\tt stdout} is actually open (and failed writes fill up the input buffer which cannot always be flushed), so they use {\tt writev} to output the result. \\ 
+Once we had successfully managed to invoke the two implementations of {\tt echo} from our tester program we needed to retrieve their outputs in order to compare their semantics. As both implementations write output directly to the shell we elected to redirect {\tt stdout} using the commands in Listing \ref{s2e-redirect}. Although this worked for GNU Coreutils, the invocation of Busybox's implementation of {\tt echo} caused our buffer to be corrupted. Upon investigation, we discovered that although GNU Coreutils uses {\tt stdio}, Busybox avoids using it as the developers do not assume that {\tt stdout} is actually open (and failed writes fill up the input buffer which cannot always be flushed), so they use {\tt writev} to output the result. \\ 
 
 \begin{lstlisting}[style=C, label=s2e-redirect, abovecaptionskip=2ex, captionpos=b, caption={Code snippet for redirecting stdout to a buffer}]
 char buf[128];
@@ -325,19 +334,19 @@ freopen("coreutils.out", "w", stdout);
 setbuf(stdout, buf);
 \end{lstlisting}
 
-At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling stdout (command line option {\tt -sym-stdout}) \cite{klee-coreutils}. Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoid modelling parts of the system).
+At this point we decided to simply write the result to a file (omitting lines 1 and 3 of Listing \ref{s2e-redirect}), which solved our corruption issues. However, when we tried to symbolically execute the program we discovered that S$^2$E was only executing concretely! Upon further inspection it became apparent that S$^2$E concretized the value of the buffer because our symbolic program argument was only being read from and not written to. Encountering this roadblock, we elected to look into KLEE's methodology for their comparison of the two utility suites. We discovered that KLEE was symbolically modelling {\tt stdout} (command line option {\tt -sym-stdout}) \cite{klee-coreutils}. Since S$^2$E is built upon KLEE we tried to add this flag into the {\tt kleeArgs} portion of the configuration file used by S$^2$E, however this option did not exist, most likely due to the fact that S$^2$E is intended as an in vivo platform that uses a real software stack (i.e., it avoids modelling parts of the system).
 
 \subsection{Modifying the implementations to not use stdout}
 
-The major challenge to get S$^2$E working with our tester program was to catch the output of each Busybox and Coreutils' {\tt echo} implementations. As discussed in the above sub-section, redirecting stdout to a buffer did not work out as expected. We thought of modifying each echo implementation to return a string to the caller function instead of outputting it to the stdout. In the case of Busybox, it already dynamically allocated a string filled with the output values. We just return this string object that contains the output value to the caller function instead of writing handling it elsewhere. In the case of coreutils' echo implementation, it does not store the output value in a specific variable. Instead, wherever necessary, it uses {\tt putc()} and {\tt fputs()} functions to send the output value (character or a string) directly to the stdout. We replaced each of these functions with {\tt strcat()} function, which captures the output value into a dynamic variable and we return this variable to the caller function. 
+The major challenge to get S$^2$E working with our tester program was to catch the output of the Busybox and GNU Coreutils {\tt echo} implementations. As discussed in the above sub-section, redirecting {\tt stdout} to a buffer did not work out as expected. We thought of modifying each implementation to return a string to the caller function instead of outputting it to the {\tt stdout}. In the case of Busybox, it already dynamically allocated a string filled with the output values. We simply return this string object that contains the {\tt echo}ed value to the caller function instead of outputting it. In the case of GNU Coreutils' {\tt echo} implementation, it does not store the output value in a specific variable. Instead, wherever necessary, it uses {\tt putc()} and {\tt fputs()} functions to send the output value (character or a string) directly to {\tt stdout}. We replaced each of these function invocations with the {\tt strcat()} function, which captures the output value into a dynamic variable that we return to the caller function. \\
 
-This way we were able to successfully capture the output of each {\tt echo} implementation. This is an implicitly required constraint for any equivalence testing using S$^2$E so that output of echo functions can be compared.  
+After modifying the implementations of {\tt echo} to return a string and creating libraries for each implementation, we were able to successfully capture the output of each implementation. This appears to be an implicit requirement for any equivalence testing of programs that output their result using S$^2$E.
 
 % ---------------------- EXPERIMENTS ---------------------- %
 
 \section{Experiments}
 
-For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox 1.22.1 (the latest versions at the time of this writing). The configuration file used to run S$^2$E is provided in Listing \ref{s2e-config} for reference. The use of the {\tt ExecutionTracer} on line 13 and the {\tt TestCaseGenerator} on line 16 were necessary to output the constraints for each state and generate concrete values for failed asserts, respectively. \\
+For our experiment to check the semantic equivalence of two implementations of {\tt echo} we used GNU Coreutils version 8.23 and Busybox version 1.22.1 (the latest versions at the time of this writing). The configuration file used to run S$^2$E is provided in Listing \ref{s2e-config} for reference. The use of the {\tt ExecutionTracer} on line 13 and the {\tt TestCaseGenerator} on line 16 were necessary to output the constraints for each state and generate concrete values for failed asserts, respectively. \\
 
 \begin{lstlisting}[style=Lua, label=s2e-config, abovecaptionskip=2ex, captionpos=b, caption={S$^2$E configuration file used for experiment}]
 -- File: config.lua
@@ -361,7 +370,7 @@ plugins = {
 pluginsConfig = {}
 \end{lstlisting}
 
-Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the code in Listing \ref{s2e-equ}. One lines 8-9 we allocate the input character arrays on the heap due to [DHAVAL]. We then create an input variable x, make it symbolic, and add it to the input character array before enabling forking in S$^2$E (line 17). On lines 18-19 we call the two implementations of {\tt echo} (GNU Coreutils = {\tt printecho}, Busybox = {\tt printbbecho}), on line 21 we assert that the two implementations produce the same result, and on line 23 we kill the state (this code is only reached if the assert was true). \\
+Once we made changes to both implementations of {\tt echo} to return strings rather than output the result and created shared/static libraries to invoke these functions from our equivalence checking program, we were able to run both programs symbolically and compare their results using the program in Listing \ref{s2e-equ}. On lines 8-9 we allocate the input character arrays on the heap as Busybox expects them to be a dynamically allocated and the implementation attempts to free the memory. On lines 13-15, we create an input variable x, make it symbolic, and add it to the input character array before enabling forking in S$^2$E (line 17). On lines 18-19 we call the two implementations of {\tt echo} (GNU Coreutils = {\tt printecho}, Busybox = {\tt printbbecho}), on line 21 we assert that the two implementations produce the same result, and on line 23 we kill the state (this code is only reached if the assert was true). \\
 
 \begin{lstlisting}[style=C, label=s2e-equ, abovecaptionskip=2ex, captionpos=b, caption={Program used to perform equivalence testing on GNU Coreutils and Busybox}]
 #include <stdlib.h>
@@ -391,11 +400,11 @@ int main() {
 }
 \end{lstlisting}
 
-Our analysis produced the results similar to those shown in listing \ref{s2e-equiv-result} which provides the constraints for that state (lines 2-7 for state 6) and also a sample test case that satisfies those constraints (lines 29-31 for state 6). Such output exists for states that fail there assertion (state 6) as well those that exit normally (state 7). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that ended with extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
+Our analysis produced results similar to those shown in Listing \ref{s2e-equiv-result} which provides the constraints for that state (lines 2-7 for state 6) and also a sample test case that satisfies those constraints (lines 29-31 for state 6). Such output exists for states that fail their assertion (state 6) as well those that exit normally (state 7). There were five assertion failures in our output falling under two categories: those that ended with {\tt 0x00} (i.e., the {\tt NULL} character), and those that included extended ASCII values like {\corner} (expressed as a signed integer -0x65). \\
 
-Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why their were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argv {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
+Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why there were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argc {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
 
-We also had a personal experience of S$^2$E finding a bug due to an implementation error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. \\
+We also had a personal experience of S$^2$E finding a bug due to our own error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed, with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. \\
 
 \begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
 131 [State 6] Forking state 6 at pc = 0x804923a into states:
@@ -435,15 +444,15 @@ v0_x_0: 2d -45 E
 
 \section{Status}
 
-After several failed attempts, we ended up successfully performing equivalence testing on the Busybox and GNU Coreutils implementations of {\tt echo} using S$^2$E. We have successfully built our prototype tester tool and analyzed the results from S$^2$E, as described in the Experiments section. We believe that the steps we took to perform this equivalence testing can be generalized to any GNU Coreutils/Busybox program. 
+After several failed attempts, we ended up successfully performing equivalence testing on the Busybox and GNU Coreutils implementations of {\tt echo} using S$^2$E. We have successfully used our program to symbolically execute both programs and analyzed the results from S$^2$E, as described in the Experiments section. We believe that the steps we took to perform this equivalence testing can be generalized to any GNU Coreutils/Busybox program. 
 
 % ---------------------- CONCLUSION ---------------------- %
 
 \section{Conclusion}
 
-The central focus of this experiment was to understand how a complex system like S$^2$E can be applied to existing software and we wanted to document this process. To perform this experiment, we thought of comparing the semantics of two implementations of {\tt echo} from Busybox and GNU Coreutils. We faced challenges throughout the experiment such as invoking Busybox and GNU Coreutils from our tester program. After many unsuccessful attempts, we successfully created a program which performs equivalence testing between the two implementations of {\tt echo} using S$^2$E. We uncovered two semantic differences between each {\tt echo} implementation: the handling extended ASCII values and input ending with a {\tt NULL} character. Each implementation generates different results. For example, if the input string ends with  a {\tt NULL} character, Coreutils echo program will output a space and a newline, whereas Busybox echo program will only output a newline. \\
+The central focus of this experiment was to understand how a complex system like S$^2$E can be applied to existing software and we wanted to document this process. To perform this experiment, we thought of comparing the semantics of two implementations of {\tt echo} from Busybox and GNU Coreutils. We faced challenges throughout the experiment such as invoking Busybox and GNU Coreutils from our tester program. After many unsuccessful attempts, we successfully created a program which performs equivalence testing between the two implementations of {\tt echo} using S$^2$E. We uncovered two semantic differences between each {\tt echo} implementation: the handling of extended ASCII values and input ending with a {\tt NULL} character. Each implementation generates different results: e.g., if the input string ends with  a {\tt NULL} character, GNU Coreutils  will output a space and a newline, whereas Busybox will only output a newline. \\
 
-Throughout this experiment, we learned few lessons. One of the factors which prolonged the process of getting started with S$^2$E was the lack of documentation. For any small tasks, we had to use the trial and error method to successfully accomplish that particular task. For instance, there is no interface for transferring files between the host (Ubuntu) and the guest (QEMU) system, and there is no documentation to perform this task. We tried using {\tt scp}, {\tt ftp} and even compiling our own QEMU VM, but nothing worked. Eventually, we had to post a question on the developer forum to seek assistance, which took time to get a response. If a simple task such as this was mentioned in the documentation then we would have been able to dedicate more time to actually testing programs on S$^2$E. The other lesson we learned was how an incomplete understanding of S$^2$E's symbolic execution led to us a lot of mistakes, as we described in the implementation section. In particular, the lack of modelling for {\tt stdout} meant that we couldn't simply capture the output, but rather it had to be returned as a string. 
+Throughout this experiment, we learned few lessons. One of the factors which prolonged the process of getting started with S$^2$E was the lack of documentation. For any small task, we had to use the trial and error method to successfully accomplish that particular task. For instance, there is no interface for transferring files between the host (Ubuntu) and the guest (QEMU) system, and there is no documentation to perform this task. We tried using {\tt scp}, {\tt ftp} and even compiling our own QEMU VM, but nothing worked. Eventually, we had to post a question on the developer forum to seek assistance, which took time to get a response. If a simple task such as this was mentioned in the documentation then we would have been able to dedicate more time to actually testing programs on S$^2$E. The other lesson we learned was how an incomplete understanding of S$^2$E's symbolic execution led to us a lot of mistakes, as we described in the implementation section. In particular, the lack of modelling for {\tt stdout} meant that we couldn't simply capture the output, but rather had returned it as a string. 
 
 % ---------------------- FUTURE WORK ---------------------- %
 
@@ -454,7 +463,7 @@ We would like to explore the following changes/additions to our current methodol
 \begin{itemize}
   \item Perform these tests on the rest of the utilities in Busybox and GNU Coreutils, and determine the semantic differences between them.
   \item Try testing other programs that don't use {\tt stdout} and determine if they present any new challenges; if so document the process to aid future users of S$^2$E.
-  \item The VM of QEMU used only 48 MB of memory, and we were unable to increase the memory (doing so led to the emulator crashing. As such, figuring out a way to change QEMU launch parameters for S$^2$E in order to give it more memory would be very important to using S$^2$ to symbolically execute larger programs.
+  \item The VM of QEMU used only 48 MB of memory, and we were unable to increase the memory (doing so led to the emulator crashing). As such, figuring out a way to change QEMU launch parameters for S$^2$E in order to give it more memory would be crucial to using S$^2$E to symbolically execute larger programs.
 \end{itemize}
 
 % ---------------------- BIBLIOGRAPHY ---------------------- %
@@ -533,6 +542,10 @@ DIILLIG, I., DILLIG, T., AND ALKEN, A. Sound, complete and scalable path- sensit
 \bibitem{bddbddb}
 LAM, M. S., WHALEY, J., LIVSHITS, V. B., MARTIN, M. C., AVOTS, D., CARBIN, M., AND UNKEL, C. Context-sensitive program analysis as
 database queries. In Symp. on Principles of Database Systems, 2005.
+
+\bibitem{s2e-init-env}
+How to symbolically execute Linux binaries?, S$^2$E. Jan 2013. {\tt https://github.com/dslab-epfl/s2e/blob/master/
+docs/Howtos/init\_env.rst} (Accessed: November 2014)
 
 \bibitem{klee-coreutils}
 Testing Coreutils, KLEE. 2009. {\tt http://klee.github.io/

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  11 DEC 2014 15:25
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  11 DEC 2014 16:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -269,10 +269,49 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <16.79993> on input line 46.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 46.
+
+Underfull \hbox (badness 10000) in paragraph at lines 52--61
+
+ []
+
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line 62.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line 62.
+
+Underfull \hbox (badness 10000) in paragraph at lines 62--71
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--80
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 81--87
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 88--97
+
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 98--104
+\OT1/ptm/m/n/10 some back-ground re-gard-ing sym-bolic ex-e-cu-tion, Sec-tion
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 98--104
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 109--110
+
+ []
 
 (/usr/local/texlive/2012/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2004/09/05 1.3 listings language file
@@ -280,72 +319,105 @@ File: lstlang1.sty 2004/09/05 1.3 listings language file
 (/usr/local/texlive/2012/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
 )
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 188.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 197.
 
 
 (/usr/local/texlive/2012/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
 LaTeX Font Info:    Font shape `OT1/pcr/bx/n' in size <8> not available
-(Font)              Font shape `OT1/pcr/b/n' tried instead on input line 188.
+(Font)              Font shape `OT1/pcr/b/n' tried instead on input line 197.
 LaTeX Font Info:    Font shape `OT1/pcr/bx/n' in size <10> not available
-(Font)              Font shape `OT1/pcr/b/n' tried instead on input line 194.
+(Font)              Font shape `OT1/pcr/b/n' tried instead on input line 203.
+
+Underfull \vbox (badness 3758) has occurred while \output is active []
+
  [1{/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
 ]
-Underfull \hbox (badness 2205) in paragraph at lines 219--223
+Underfull \hbox (badness 10000) in paragraph at lines 205--206
+
+ []
+
+
+Underfull \hbox (badness 1406) in paragraph at lines 207--208
+\OT1/ptm/m/n/10 con-straints us-ing sym-bolic ex-e-cu-tion, but then gen-er-ate
+s
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 207--208
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 209--210
+\OT1/ptm/m/n/10 con-crete ex-e-cu-tion, sym-bolic ex-e-cu-tion, and con-colic
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 209--210
+
+ []
+
+
+Underfull \hbox (badness 2205) in paragraph at lines 228--232
 []\OT1/ptm/m/it/10 Relaxed Con-sis-tency CFG Con-sis-tency (RC-CC):
  []
 
-<s2e-consistency-models.png, id=12, 1081.03876pt x 741.77126pt>
+
+Underfull \hbox (badness 1622) in paragraph at lines 234--235
+\OT1/ptm/m/n/10 au-to-matic symbolic-concrete bidi-rec-tional data con-ver-sion
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 234--235
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 236--237
+
+ []
+
+<s2e-consistency-models.png, id=11, 1081.03876pt x 741.77126pt>
 File: s2e-consistency-models.png Graphic file (type png)
 
 <use s2e-consistency-models.png>
-Package pdftex.def Info: s2e-consistency-models.png used on input line 231.
+Package pdftex.def Info: s2e-consistency-models.png used on input line 240.
 (pdftex.def)             Requested size: 216.81pt x 148.75908pt.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 232.
+(Font)              <8> on input line 241.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 232.
+(Font)              <6> on input line 241.
 
-Underfull \hbox (badness 2393) in paragraph at lines 243--244
+Underfull \vbox (badness 3343) has occurred while \output is active []
+
+ [2]
+Underfull \hbox (badness 2393) in paragraph at lines 252--253
 []\OT1/ptm/m/n/10 Run each pro-gram with sym-bolic in-put (us-ing
  []
 
-[2 <./s2e-consistency-models.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 256--257
+
+Underfull \hbox (badness 1490) in paragraph at lines 265--266
+\OT1/ptm/m/n/10 dif-fer-ences be-tween the two im-ple-men-ta-tions. From this
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 265--266
 
  []
 
 
-Underfull \hbox (badness 1571) in paragraph at lines 258--259
+Underfull \hbox (badness 1571) in paragraph at lines 267--268
 \OT1/ptm/m/n/10 ex-e-cu-tion (line 2); \OT1/pcr/m/n/10 --select-process-code \O
 T1/ptm/m/n/10 en-ables
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 258--259
-
- []
-
-
-Overfull \hbox (10.0pt too wide) in paragraph at lines 265--265
-[][] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 269--270
-
- []
-
-
-Overfull \hbox (10.0pt too wide) in paragraph at lines 283--283
-[][] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 289--290
+Underfull \hbox (badness 10000) in paragraph at lines 267--268
 
  []
 
@@ -354,70 +426,98 @@ File: lstlang1.sty 2004/09/05 1.3 listings language file
 )
 (/usr/local/texlive/2012/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2004/09/05 1.3 listings language file
-) [3]
+)
+Overfull \hbox (10.0pt too wide) in paragraph at lines 274--274
+[][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 278--279
+
+ []
+
+
+Overfull \hbox (10.0pt too wide) in paragraph at lines 292--292
+[][] 
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 298--299
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 309--310
+[3 <./s2e-consistency-models.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 307--308
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 320--321
+Underfull \hbox (badness 10000) in paragraph at lines 318--319
+[]\OT1/ptm/b/n/10 Using the shared li-braries: \OT1/ptm/m/n/10 We per-formed th
+e
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 318--319
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 329--330
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 341--342
 
  []
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 340--341
+Underfull \hbox (badness 3557) in paragraph at lines 349--350
+\OT1/ptm/m/n/10 use of the \OT1/pcr/m/n/10 ExecutionTracer \OT1/ptm/m/n/10 on l
+ine 13 and the
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 349--350
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 364--365
+Underfull \hbox (badness 10000) in paragraph at lines 373--374
 
  []
 
 
-Overfull \hbox (10.0pt too wide) in paragraph at lines 392--392
+Overfull \hbox (10.0pt too wide) in paragraph at lines 401--401
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 394--395
+Underfull \hbox (badness 10000) in paragraph at lines 403--404
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 396--397
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 398--399
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
 
  []
 
 [5]
-Overfull \hbox (10.0pt too wide) in paragraph at lines 432--432
+Underfull \hbox (badness 10000) in paragraph at lines 407--408
+
+ []
+
+
+Overfull \hbox (10.0pt too wide) in paragraph at lines 441--441
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 444--445
+Underfull \hbox (badness 10000) in paragraph at lines 453--454
 
  []
 
-Missing character: There is no ï in font ptmr7t!
-Missing character: There is no ¿ in font ptmr7t!
-Missing character: There is no ½ in font ptmr7t!
-Missing character: There is no ï in font ptmr7t!
-Missing character: There is no ¿ in font ptmr7t!
-Missing character: There is no ½ in font ptmr7t!
-Missing character: There is no ï in font ptmr7t!
-Missing character: There is no ¿ in font ptmr7t!
-Missing character: There is no ½ in font ptmr7t!
 Missing character: There is no ï in font ptmr7t!
 Missing character: There is no ¿ in font ptmr7t!
 Missing character: There is no ½ in font ptmr7t!
@@ -428,7 +528,28 @@ Missing character: There is no ï in font ptmr7t!
 Missing character: There is no ¿ in font ptmr7t!
 Missing character: There is no ½ in font ptmr7t!
 [6]
-Underfull \hbox (badness 6910) in paragraph at lines 538--540
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+Missing character: There is no ï in font ptmr7t!
+Missing character: There is no ¿ in font ptmr7t!
+Missing character: There is no ½ in font ptmr7t!
+
+Underfull \hbox (badness 2495) in paragraph at lines 547--549
+[]\OT1/ptm/m/n/8 How to sym-bol-i-cally ex-e-cute Linux bi-na-ries?, S$[]$E. Ja
+n 2013.
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 547--549
+\OT1/pcr/m/n/8 https://github.com/dslab-epfl/s2e/blob/master/
+ []
+
+
+Underfull \hbox (badness 6910) in paragraph at lines 551--553
 []\OT1/ptm/m/n/8 Testing Core-utils, KLEE. 2009. \OT1/pcr/m/n/8 http://klee.git
 hub.io/
  []
@@ -448,13 +569,13 @@ Before submitting the final camera ready copy, remember to:
 
 ] (./finalReport.aux) ) 
 Here is how much of TeX's memory you used:
- 4142 strings out of 493488
- 61852 string characters out of 3141326
- 209304 words of memory out of 3000000
- 7401 multiletter control sequences out of 15000+200000
+ 4147 strings out of 493488
+ 61886 string characters out of 3141326
+ 199352 words of memory out of 3000000
+ 7406 multiletter control sequences out of 15000+200000
  39515 words of font info for 85 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 38i,7n,58p,1607b,1559s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 38i,7n,57p,1610b,1163s stack positions out of 5000i,500n,10000p,200000b,50000s
  </Users/marianadangelo/Library/texlive/2012/texmf-var/f
 onts/pk/ljfour/public/wsuipa/wsuipa10.600pk>{/usr/local/texlive/2012/texmf-dist
 /fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2012/texmf-dist/fonts/type1/pu
@@ -469,7 +590,7 @@ s/cm/cmsy7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/courier/ucrb
 /usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local
 /texlive/2012/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2
 012/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on finalReport.pdf (7 pages, 298009 bytes).
+Output written on finalReport.pdf (7 pages, 298916 bytes).
 PDF statistics:
  85 PDF objects out of 1000 (max. 8388607)
  60 compressed objects within 1 object stream
