@@ -28,8 +28,8 @@
 
 % ---------------------- TITLE ---------------------- %
 
-\title{Comparing Application Semantics with S$^2$E \\ {\large Determining whether busybox and coreutils are actually the same}}
-% or \title{Symbolically Executing Real Applications \\ {\large Trying to make S$^2$E work with real software}}
+\title{Determining Semantic Equivalence with S$^2$E \\ {\large Are Busybox and GNU Coreutils are actually the same?}}
+% \title{Symbolically Executing Real Applications \\ {\large What does it take to make S$^2$E work with real software?}}
 
 \author{\IEEEauthorblockN{Mariana D'Angelo}
 \IEEEauthorblockA{Department of Electrical and Computer Engineering\\
@@ -100,13 +100,15 @@ symbolic execution, Section III discusses our approach to the experiments, Secti
 describes in detail how we attempted to implement our approach, Section V discusses 
 the results of our successful experiment with echo, Section VI presents the status 
 of our implementation, Section VII concludes with some lessons learned, and finally in
-Section VIII we discuss future work.  \\
+Section VIII we discuss future work.  
 
 % ---------------------- BACKGROUND ---------------------- %
 
 \section{Background}
 
 There is much work in symbolic execution for testing \cite{klee, RWset, vul-signature, system-crash, exe, bad-input, end-to-end, dyn-test, compositional-test, dart, sage, cute}. A typical approach for testing is fuzzing \cite{sage}, which involves generating random inputs for a program in an attempt to exercise all paths in a program (and hopefully hit any buggy code). This is known as concrete execution which involves running the program with deterministic values. Fuzz testing has several limitations, in particular coverage of paths in a program \cite{sage}. For example, Listing \ref{code-fuzzing} shows an if statement which is only taken when x is 10. There are $2^{32}$ possible values which x could take when an input is randomly generated and as such, the probability of actually taking this path is $2^{-32}$. This example demonstrates that the likelihood of some paths being taken when fuzzing is extremely low, which is the reason for the poor test coverage of concrete execution. \\
+
+Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code, a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). 
 
 %  ------ CODE SYNTAX HIGHLIGHTING ------ %
 
@@ -202,9 +204,7 @@ if (x == 10) {
 }
 \end{code}
 
- Symbolic execution, on the other hand, runs the application with symbolic inputs \cite{klee} which are initially unconstrained by design. The program executes with these symbolic values and replaces concrete operations with ones that can manipulate symbolic values. The symbolic execution engine ``follows" both paths whenever it encounters a branch on a symbolic value and adds the path condition to a set of constraints known as the ``path constraint". When a bug is encountered in the code, a test case (i.e., concrete inputs) can be generated from the path constraint. There are two main limitations of symbolic execution: (1) ``the path explosion problem" \cite{s2e}, which is due to the exponential growth of paths in a program caused by conditional branches, and (2) ``the environment problem" \cite{klee}, which is due to interactions with the surrounding environment (e.g, operating system, network, etc.). \\
-
- In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. \\
+In order to deal with the environment problem, one can use a mixture of symbolic and concrete execution (also known as concolic execution \cite{cute}). Concolic execution gathers constraints using symbolic execution, but then generates concrete values using a constraint solver in order to address the environment problem. Once these concrete values are generated the program can interact with its environment in a normal fashion without the overheads and problems associated with symbolically executing the environment. \\
 
 S$^2$E is a symbolic execution engine which can perform concrete execution, symbolic execution, and concolic execution depending on the consistency model chosen. There are six different consistency models in S$^2$E, described below. Figure \ref{s2e-cm} provides an overview of the models showing how they transition from highly strict to highly relaxed models with some details about what consistency requirements are relaxed for each model. A model is consistent if there exists a globally feasible path through the system for every path explored in the unit. A unit is the block one wishes to analyze and the environment is the rest of the system. \\
 
@@ -231,16 +231,16 @@ path in the unit's inter-procedural control flow graph (even
 infeasible ones).
 \end{itemize}
 
-There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort. \\
-
-Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}. \\
-
 \begin{figure}[!t]
 \centering
 \includegraphics[width=3in]{s2e-consistency-models.png}
 \caption{S$^2$E Consistency Models \cite{s2e}}
 \label{s2e-cm}
 \end{figure}
+
+There are several differences between S$^2$E and other similar symbolic execution engines. For instance, KLEE uses file system models \cite{klee} to avoid symbolically executing the actual filesystem. S$^2$E does not take this approach as writing models is a labour intensive and error-prone process. Cute \cite{cute} executes the environment concretely (i.e., without modelling) with a consistency model similar to S$^2$E's SC-SE, but it is limited to code-based selection and one consistency model. S$^2$E does not use compositional symbolic execution \cite{compositional-test}, a performance optimization which saves results for parts of the program (e.g., a function) and reuses them when that part is called in a different context. With concolic execution everything runs concretely for full systems, however, when the execution crosses program boundaries it may result in lost paths \cite{s2e}. Due to this, KLEE and CUTE cannot track path conditions in the environment and hence are unable to re-execute calls to enable overconstrained but feasible paths (e.g., malloc does not execute deterministically). DART \cite{dart}, CUTE \cite{cute} and EXE \cite{exe} use mix-mode execution (concretely executing some parts and symbolically executing others) to increase efficiency, however, they do not use automatic symbolic-concrete bidirectional data conversion (i.e., automatic conversion between concrete and symbolic values at program boundaries such as the unit and the environment) unlike S$^2$E, which is key to S$^2$E's scalability and low programmer effort. \\
+
+Static analysis is performed without executing the program in question and has known limitations such as a high false positive and negative rate (due to infeasible paths) \cite{sage} and a lack of runtime environment analysis (as only the application source code is parsed). To reduce the number of false positives tools such as Saturn \cite{saturn} and bddbddb \cite{bddbddb} use a path-sensitive analysis engine. Saturn aims to detect logic programming language bugs by summarizing functions. bddbddb finds buggy patterns in a database where programs are stored as relations. As can be inferred, these tools are language specific and require different implementations for different programming languages. Additionally, using these tools requires learning a new programming language. As a dynamic analysis framework, S$^2$E addresses the limitations of static analysis tools. For example, they directly operate on and analyze binaries whereas static analysis would require disassembly and decompilation. This could involve converting an x86 binary to the LLVM format and running it through an engine like KLEE. Disassembly and decompilation \cite{disassembly} are classically undecidable problems (e.g., disambiguating code from data) \cite{s2e}. \\
 
 % ---------------------- APPROACH ---------------------- %
 
@@ -404,7 +404,9 @@ Our analysis produced results similar to those shown in Listing \ref{s2e-equiv-r
 
 Using the sample input provided by S$^2$E we manually analyzed the two implementations of {\tt echo} to see why there were differences. We determined that although both implementations of {\tt echo} print a space between strings found in {\tt argv}, the conditions leading to printing a space are different. In GNU Coreutils' implementation, if there is at least one string to echo (check {\tt argc {$>$} 0}) a space is added after the current word. Conversely, in Busybox's implementation a space is only printed after a string if there is another string to print after the current one (check {\tt *++argv !=  NULL}). \\
 
-We also had a personal experience of S$^2$E finding a bug due to our own error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed, with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. \\
+Unfortunately we did not have sufficient time to look into the root cause of extended ASCII value mishandling because the implementations of {\tt echo} do not discuss encodings. However, we conjecture that since both of these tools use different mechanisms to output (i.e., {\tt stdio} vs {\tt writev}) one of these mechanisms has not implemented support for extended ASCII. \\
+
+On a personal note, we had our own experience where S$^2$E found a bug due to our own error when changing the implementation of GNU Coreutils' {\tt echo} to return a string rather than output the result. Here we had accidentally changed the code which prints a newline after the echo is completed, with code to print a space. Luckily, S$^2$E was able to bring this error to our attention and we fixed this before running our actual experiments. \\
 
 \begin{lstlisting}[style=C, label=s2e-equiv-result, abovecaptionskip=2ex, captionpos=b, caption={Partial output of equivalence testing for GNU Coreutils and Busybox}]
 131 [State 6] Forking state 6 at pc = 0x804923a into states:
